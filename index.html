@@ -78,10 +78,11 @@
   .word{
     font-family:var(--read-font);
     font-size:clamp(40px,9.5vw,104px); line-height:1.05; font-weight:600;
-    letter-spacing:.01em; margin:4px 0 10px; word-break:break-word;
+    letter-spacing:.01em; margin:4px 0 10px; white-space:nowrap;
   }
   .word .v{color:var(--accent2)}
   .word .tail{color:var(--accent2);opacity:.85}
+  .word .finish{color:var(--warm)}
   .breathring{
     width:clamp(90px,16vw,132px);height:clamp(90px,16vw,132px);border-radius:50%;
     border:2px solid var(--line); display:grid;place-items:center;margin:0 auto 14px;
@@ -162,6 +163,46 @@
     border-bottom-width:2px;border-radius:5px;padding:1px 5px;color:var(--dim);background:var(--card)
   }
 
+  /* ---------- mirror ---------- */
+  .mirror{
+    position:relative; width:100%; background:#000; overflow:hidden; flex:none;
+    border-bottom:1px solid var(--line);
+  }
+  .mirror.hidden{display:none}
+  .mirror video{
+    width:100%; height:100%; object-fit:cover; display:block; background:#000;
+    transform:scaleX(-1);            /* flip it, so it behaves like a mirror */
+  }
+  .mirror-msg{
+    position:absolute; inset:0; display:grid; place-items:center; text-align:center;
+    padding:16px; font-size:12.5px; line-height:1.5; color:var(--warm);
+    background:var(--card);
+  }
+  .mirror-msg:empty{display:none}
+
+  /* ---------- voice bar ---------- */
+  .voicebar{border-top:1px solid var(--line);background:var(--bg2);padding:9px 16px 2px}
+  .vb{max-width:1000px;margin:0 auto;display:flex;gap:9px;align-items:center;flex-wrap:wrap;justify-content:center}
+  .vb + .vb{margin-top:8px}
+  .vb.hidden{display:none}
+  .vbtag{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
+  .mini{
+    border:1px solid var(--line);background:var(--card);color:var(--dim);
+    border-radius:8px;padding:6px 10px;font-size:12px;white-space:nowrap;
+  }
+  .mini:hover:not(:disabled){border-color:var(--accent)}
+  .mini.on{border-color:var(--accent2);color:var(--ink);background:rgba(126,224,192,.14)}
+  .mini:disabled{opacity:.35;cursor:default}
+  .warn{font-size:11.5px;color:var(--warm);text-align:center;max-width:640px;margin:8px auto 0;line-height:1.5}
+  .warn:empty{margin:0}
+  .vbhead{gap:10px}
+  #vb-body.closed{display:none}
+  #vb-label{
+    flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    letter-spacing:.04em;text-transform:none;font-size:12px;min-width:0;
+  }
+  #tts-voice{max-width:min(240px,50vw);font-size:12.5px;padding:6px 8px}
+
   /* ---------- guide ---------- */
   .guide{max-width:880px;margin:0 auto;padding:26px 20px 60px;line-height:1.65}
   .guide h2{font-size:20px;margin:28px 0 10px;font-weight:600}
@@ -225,9 +266,14 @@
 </header>
 
 <main>
+  <div class="mirror hidden" id="mirror">
+    <video id="mirror-video" autoplay muted playsinline></video>
+    <div class="mirror-msg" id="mirror-msg"></div>
+  </div>
+
   <!-- ============ VOCAL ============ -->
   <section class="panel active" id="p-vocal">
-    <div class="stage">
+    <div class="stage" id="v-stage">
       <div class="breathring"><i id="v-ring"></i></div>
       <div class="cue" id="v-cue">Press Start</div>
       <div class="word" id="v-word">APPLE</div>
@@ -235,7 +281,46 @@
       <div class="counter" id="v-count">Lesson 1 &middot; word 1 of 15</div>
     </div>
     <div class="wordstrip" id="v-strip"></div>
-    <div class="controls">
+    <div class="voicebar" id="voicebar">
+      <div class="vb vbhead">
+        <span class="vbtag" id="vb-label"></span>
+        <button class="mini" id="vb-toggle">Voice &amp; mirror &#9662;</button>
+      </div>
+      <div id="vb-body" class="closed">
+        <div class="vb" id="vb-vocal">
+          <span class="vbtag">Spoken word</span>
+          <button class="mini" id="tts-sayword">Say each word: off</button>
+          <span class="vbtag" style="margin-left:8px">Beeps</span>
+          <span class="seg"><button id="v-sound-off" class="on">Off</button><button id="v-sound-on">On</button></span>
+        </div>
+        <div class="vb hidden" id="vb-read">
+          <span class="vbtag">Computer voice</span>
+          <span class="seg">
+            <button id="tts-off" class="on">Off</button>
+            <button id="tts-with">Speak with me</button>
+            <button id="tts-echo">Speak, then my turn</button>
+          </span>
+          <span class="vbtag" style="margin-left:8px">Beeps</span>
+          <span class="seg"><button id="r-sound-off" class="on">Off</button><button id="r-sound-on">On</button></span>
+        </div>
+        <div class="vb">
+          <span class="vbtag">Mirror</span>
+          <span class="seg"><button id="mir-off" class="on">Off</button><button id="mir-on">On</button></span>
+          <span class="vbtag" style="margin-left:8px">Size</span>
+          <button class="mini" data-mir="22">Small</button>
+          <button class="mini on" data-mir="30">Medium</button>
+          <button class="mini" data-mir="42">Large</button>
+        </div>
+        <div class="vb">
+          <span class="vbtag">Voice</span>
+          <select id="tts-voice"></select>
+          <label class="sl" style="min-width:128px;max-width:180px">Voice speed <b id="tts-ratev">0.85&times;</b>
+            <input type="range" id="tts-rate" min="0.5" max="1.2" step="0.05" value="0.85"></label>
+        </div>
+        <div class="warn" id="tts-warn"></div>
+      </div>
+    </div>
+    <div class="controls" id="v-controls">
       <div class="row">
         <button class="btn" id="v-prev">&lsaquo; Prev</button>
         <button class="btn primary" id="v-play">Start</button>
@@ -244,14 +329,14 @@
         <button class="btn ghost" id="v-reset">Restart lesson</button>
       </div>
       <div class="row sliders">
-        <label class="sl">Hold the first sound <b id="v-holdv">5.0 s</b>
+        <label class="sl">Stretch the vowel <b id="v-holdv">5.0 s</b>
           <input type="range" id="v-hold" min="2" max="10" step="0.5" value="5"></label>
         <label class="sl">Breathe in <b id="v-inhalev">3.0 s</b>
           <input type="range" id="v-inhale" min="1.5" max="6" step="0.5" value="3"></label>
+        <label class="sl">Then finish the word <b id="v-releasev">1.2 s</b>
+          <input type="range" id="v-release" min="0.5" max="4" step="0.1" value="1.2"></label>
         <label class="sl">Rest between words <b id="v-restv">1.5 s</b>
           <input type="range" id="v-rest" min="0.5" max="5" step="0.5" value="1.5"></label>
-        <label class="sl">Cue tone
-          <span class="seg" style="margin-top:2px"><button id="v-sound-off" class="on">Off</button><button id="v-sound-on">On</button></span></label>
       </div>
       <div class="hint"><kbd>Space</kbd> start / pause &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> move between words &middot; practise in front of a mirror when you can</div>
     </div>
@@ -259,7 +344,7 @@
 
   <!-- ============ READING ============ -->
   <section class="panel" id="p-read">
-    <div class="stage">
+    <div class="stage" id="r-stage">
       <div class="cue" id="r-cue">Press Start</div>
       <div class="neighbour prev" id="r-prev"></div>
       <div class="chunk" id="r-chunk"></div>
@@ -268,7 +353,7 @@
       <div class="counter" id="r-count"></div>
     </div>
     <div class="fulltext" id="r-full"></div>
-    <div class="controls">
+    <div class="controls" id="r-controls">
       <div class="row">
         <button class="btn" id="r-prevbtn">&lsaquo; Prev</button>
         <button class="btn primary" id="r-play">Start</button>
@@ -285,8 +370,6 @@
           <input type="range" id="r-pace" min="0.3" max="1.6" step="0.05" value="0.7"></label>
         <label class="sl">Pause at each slash <b id="r-breathv">1.5 s</b>
           <input type="range" id="r-breath" min="0.4" max="5" step="0.1" value="1.5"></label>
-        <label class="sl">Cue tone
-          <span class="seg" style="margin-top:2px"><button id="r-sound-off" class="on">Off</button><button id="r-sound-on">On</button></span></label>
       </div>
       <div class="hint" id="r-hint"><kbd>Space</kbd> start / pause &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> move between phrases</div>
     </div>
@@ -320,10 +403,12 @@
         <h3>Vocal Exercise &mdash; how the page paces it</h3>
         <ol>
           <li>Every word in Vocal Exercise&nbsp;I begins with a vowel. The <span style="color:var(--accent2)">coloured</span> first letter is the sound you stretch.</li>
+          <li>The word is <b>spoken</b> first, so you know what is coming.</li>
           <li><b>Breathe in</b> while the circle grows. The book suggests inhaling through the mouth for a short initial period, then switching to the nose.</li>
-          <li><b>Speak</b> as the bar fills: begin the vowel gently and hold it for the whole length of the bar, then finish the word &mdash; <i>Aaaaaa&#8209;pple</i>. No push, no force; throat, tongue, lips and jaw stay loose.</li>
+          <li><b>Stretch the vowel</b> as the bar fills, and hold it the whole length of the bar &mdash; <i>Aaaaaaaa</i>. On screen the vowel grows one letter at a time. No push, no force; throat, tongue, lips and jaw stay loose.</li>
+          <li><b>Finish the word</b> when the rest of it turns <span style="color:var(--warm)">amber</span> and the bar drains &mdash; <i>&hellip;pple</i>.</li>
           <li><b>Rest</b>, and the next word arrives on its own.</li>
-          <li>Six lessons, 80 words. Work through them for about 15 minutes.</li>
+          <li>Six lessons, 80 words. Work through them for about 15 minutes. The four sliders below set the length of each stage.</li>
         </ol>
       </div>
 
@@ -335,6 +420,38 @@
           <li>At the end of the phrase the <b>pause</b> cue appears &mdash; stop, breathe, and only then take the next phrase.</li>
           <li>Two sets of material: the <b>133 general instructions</b>, and the <b>Self&#8209;Direction</b> passage (the book suggests reading that one after dinner, before sleeping).</li>
           <li>If the auto pace does not suit you, switch to <b>I tap myself</b> and move with <kbd>Space</kbd> at your own speed. Your own rhythm matters more than the timer.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3>Practising with your eyes off the screen</h3>
+        <ol>
+          <li>Put a headset on, stand at the mirror, and open <b>Voice &amp; cues</b> below the practice area. Turn on <b>Say each word</b> and <b>Beeps</b>.</li>
+          <li>Each word then arrives as sound alone: the word is <b>spoken</b>, then three rising tones walk you through it.
+            <br><b>Low tone</b> &mdash; begin the in&#8209;breath.
+            <br><b>Middle tone</b> &mdash; begin the vowel and hold it, <i>Aaaaaaaa</i>.
+            <br><b>High tone</b> &mdash; release, and finish the word: <i>&hellip;pple</i>.</li>
+          <li>The three sliders set that shape: how long you <b>stretch the vowel</b>, how long you have to <b>finish the word</b>, and the <b>rest</b> before the next one.</li>
+          <li>On screen the word shows the same thing, if you glance across: the vowel grows letter by letter while you hold it, then the rest of the word lights up amber when it is time to release.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3>Using the phone as your mirror</h3>
+        <ol>
+          <li>The book asks you to practise in front of a mirror sometimes, to see that the speech organs are moving freely and to catch any unusual gesture. Switch <b>Mirror</b> on in <b>Voice &amp; mirror</b> and the front camera fills a strip above the word, flipped so it behaves like a real mirror.</li>
+          <li><b>Small / Medium / Large</b> sets how much of the screen it takes &mdash; roughly a fifth, a third, or a little under half.</li>
+          <li>The picture <b>never leaves your phone</b>. Nothing is recorded, nothing is uploaded, and switching the mirror off releases the camera straight away.</li>
+          <li>It needs the <b>https://</b> address. A copy of this page opened from your own disk cannot use the camera &mdash; browsers only allow it on a secure address.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3>The computer voice on the reading tab</h3>
+        <ol>
+          <li><i>Speak with me</i> reads each phrase in unison with you. <i>Speak, then my turn</i> reads it, then leaves you a gap to say it back yourself.</li>
+          <li><b>It is a metronome with words, not a model.</b> It cannot produce the long lengthening style &mdash; slowing it down only makes it sluggish. Take your sense of <i>how it should sound</i> from CD&#8209;1, played in any music app, and let the computer voice do nothing but hold the pace.</li>
+          <li>If your device has an Indian English voice it is offered first in the <b>Voice</b> list.</li>
         </ol>
       </div>
 
@@ -366,8 +483,10 @@ const DATA = {"vocal": [["APPLE", "ABSENT", "ACTION", "ADD", "ADDRESS", "ADMIT",
 /* ---------------- storage ---------------- */
 const KEY = 'scc-practice-v1';
 let S = {theme:'dark', hold:5, inhale:3, rest:1.5, pace:0.7, breath:1.5,
-         vSound:false, rSound:false, lesson:0, source:0, unit:0, mode:'auto', day:'', tv:0, tr:0};
+         vSound:false, rSound:false, lesson:0, source:0, unit:0, mode:'auto', day:'', tv:0, tr:0,
+         release:1.2, ttsMode:'off', ttsRate:0.85, voiceURI:'', sayWord:false, vbOpen:false, mirror:false, mirrorSize:30, ver:0};
 try{ const raw = localStorage.getItem(KEY); if(raw) Object.assign(S, JSON.parse(raw)); }catch(e){}
+if(S.ver !== 2){ S.vSound = true; S.sayWord = true; S.ver = 2; }  /* guided-cue release */
 const today = new Date().toISOString().slice(0,10);
 if(S.day !== today){ S.day = today; S.tv = 0; S.tr = 0; }
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
@@ -389,6 +508,8 @@ function setTab(i){
   });
   if(i !== 0) vocal.stop();
   if(i !== 1) reading.stop();
+  try{ speechSynthesis.cancel(); }catch(e){}
+  placeVoiceBar(i);
 }
 TABS.forEach(function(pair, i){ $(pair[0]).onclick = function(){ setTab(i); }; });
 
@@ -407,6 +528,24 @@ setInterval(function(){
   if(dirty){ paintToday(); save(); }
 }, 1000);
 
+/* ---------------- keep the screen awake while practising ---------------- */
+let wakeLock = null;
+function keepAwake(on){
+  try{
+    if(on){
+      if(!wakeLock && 'wakeLock' in navigator){
+        navigator.wakeLock.request('screen').then(function(wl){
+          wakeLock = wl;
+          wl.addEventListener('release', function(){ wakeLock = null; });
+        }).catch(function(){});
+      }
+    } else if(wakeLock){
+      wakeLock.release().catch(function(){});
+      wakeLock = null;
+    }
+  }catch(e){ wakeLock = null; }
+}
+
 /* ---------------- cue tone ---------------- */
 let actx = null;
 function beep(freq, len){
@@ -423,8 +562,8 @@ function beep(freq, len){
 }
 function segPair(offId, onId, get, set){
   const paint = function(){ $(offId).classList.toggle('on', !get()); $(onId).classList.toggle('on', !!get()); };
-  $(offId).onclick = function(){ set(false); paint(); save(); };
-  $(onId).onclick  = function(){ set(true);  paint(); save(); beep(660, 0.12); };
+  $(offId).onclick = function(){ set(false); paint(); save(); paintVbLabel(); };
+  $(onId).onclick  = function(){ set(true);  paint(); save(); beep(660, 0.12); paintVbLabel(); };
   paint();
 }
 segPair('v-sound-off','v-sound-on', function(){ return S.vSound; }, function(v){ S.vSound = v; });
@@ -451,16 +590,36 @@ const vocal = {
     };
   },
 
-  paintWord(progress){
+  paintWord(progress, release){
     const w = this.words()[this.i] || '';
     const first = w.charAt(0);
     const restLetters = w.slice(1);
     const isVowel = 'AEIOU'.indexOf(first) >= 0;
-    const n = isVowel ? Math.round((progress || 0) * 9) : 0;
+    /* keep the whole word near a constant width: long words get a shorter tail,
+       so the type stays big instead of shrinking away on a phone */
+    const maxTail = Math.max(2, Math.min(9, 12 - w.length));
+    const n = isVowel ? Math.round((progress || 0) * maxTail) : 0;
     const tail = first.toLowerCase().repeat(n);
+    const tailEnd = release ? '<span class="finish">' + restLetters + '</span>' : restLetters;
     $('v-word').innerHTML = isVowel
-      ? '<span class="v">' + first + '</span><span class="tail">' + tail + '</span>' + restLetters
-      : w;
+      ? '<span class="v">' + first + '</span><span class="tail">' + tail + '</span>' + tailEnd
+      : (release ? '<span class="finish">' + w + '</span>' : w);
+    /* shrink to fit as the stretched vowel makes the word longer:
+       estimate, then correct against what was actually laid out */
+    const el = $('v-word');
+    const chars = (isVowel ? 1 + n + restLetters.length : w.length);
+    const avail = (el.parentElement ? el.parentElement.clientWidth : 320) - 24;
+    const key = chars + 'x' + avail;
+    if(avail > 40 && this._fsKey !== key){
+      this._fsKey = key;
+      let fs = Math.max(22, Math.min(Math.floor(avail / Math.max(chars, 1) / 0.72), 104));
+      el.style.fontSize = fs + 'px';
+      if(el.scrollWidth > avail && el.scrollWidth > 0){
+        fs = Math.max(18, Math.floor(fs * avail / el.scrollWidth));
+        el.style.fontSize = fs + 'px';
+      }
+    }
+
     $('v-count').textContent = 'Lesson ' + (this.lesson+1) + ' · word ' + (this.i+1) + ' of ' + this.words().length;
 
     const strip = $('v-strip'), self = this;
@@ -484,73 +643,127 @@ const vocal = {
 
   render(progress){
     const ring = $('v-ring'), cue = $('v-cue'), bar = $('v-bar');
-    cue.className = 'cue ' + this.phase;
+    const ph = this.phase;
+    cue.className = 'cue ' + (ph === 'inhale' ? 'inhale' : (ph === 'rest' || ph === 'announce') ? 'rest' : 'speak');
     if(!this.running){
       cue.textContent = this.started ? 'Paused' : 'Press Start';
       bar.style.width = '0%'; ring.style.transform = 'scale(.3)';
-      this.paintWord(0);
+      this.paintWord(0, false);
       return;
     }
-    if(this.phase === 'inhale'){
+    const w = this.words()[this.i] || '', first = w.charAt(0);
+    if(ph === 'announce'){
+      cue.textContent = 'Listen';
+      ring.style.transform = 'scale(.3)'; bar.style.width = '0%';
+      this.paintWord(0, false);
+    } else if(ph === 'inhale'){
       cue.textContent = 'Breathe in';
       ring.style.transform = 'scale(' + (0.3 + 0.7*progress).toFixed(3) + ')';
       bar.style.width = '0%';
-      this.paintWord(0);
-    } else if(this.phase === 'speak'){
-      cue.textContent = 'Speak — stretch the first sound';
+      this.paintWord(0, false);
+    } else if(ph === 'hold'){
+      cue.textContent = 'Stretch the ' + first + ' sound';
       ring.style.transform = 'scale(' + (1 - 0.6*progress).toFixed(3) + ')';
       bar.style.width = (progress*100).toFixed(1) + '%';
-      this.paintWord(progress);
+      this.paintWord(progress, false);
+    } else if(ph === 'release'){
+      cue.textContent = 'Now finish the word';
+      ring.style.transform = 'scale(.3)';
+      bar.style.width = (100 - progress*100).toFixed(1) + '%';
+      this.paintWord(1, true);
     } else {
       cue.textContent = 'Rest';
       ring.style.transform = 'scale(.3)';
-      bar.style.width = '100%';
-      this.paintWord(1);
+      bar.style.width = '0%';
+      this.paintWord(1, false);
     }
   },
 
   dur(){
-    return this.phase === 'inhale' ? S.inhale*1000
-         : this.phase === 'speak'  ? S.hold*1000
+    return this.phase === 'inhale'  ? S.inhale*1000
+         : this.phase === 'hold'    ? S.hold*1000
+         : this.phase === 'release' ? S.release*1000
          : S.rest*1000;
+  },
+
+  /* each new phase gets its own tone, rising through the cycle */
+  goPhase(ph){
+    this.phase = ph; this.t0 = performance.now();
+    if(S.vSound){
+      if(ph === 'inhale')       beep(392, 0.16);
+      else if(ph === 'hold')    beep(523, 0.16);
+      else if(ph === 'release') beep(784, 0.14);
+    }
+    this.render(0);
+  },
+
+  /* say the word, then hand over to the breath */
+  announce(){
+    const self = this;
+    this.speakToken = (this.speakToken || 0) + 1;
+    const tok = this.speakToken;
+    if(!S.sayWord){ this.goPhase('inhale'); return; }
+    this.speaking = true;
+    this.phase = 'announce'; this.t0 = performance.now();
+    this.render(0);
+    say(this.words()[this.i], function(){
+      if(tok !== self.speakToken || !self.running) return;
+      self.speaking = false;
+      self.goPhase('inhale');
+    });
   },
 
   loop(){
     if(!this.running) return;
+    const self = this;
+    if(this.speaking){
+      this.render(0);
+      clearTimeout(this.raf);
+      this.raf = setTimeout(function(){ self.loop(); }, 33);
+      return;
+    }
     const el = performance.now() - this.t0, d = this.dur();
     if(el >= d){
-      this.t0 = performance.now();
-      if(this.phase === 'inhale'){ this.phase = 'speak'; if(S.vSound) beep(523, 0.15); }
-      else if(this.phase === 'speak'){ this.phase = 'rest'; if(S.vSound) beep(392, 0.12); }
-      else { this.phase = 'inhale'; this.i = (this.i + 1) % this.words().length; }
-      this.render(0);
+      if(this.phase === 'inhale')       this.goPhase('hold');
+      else if(this.phase === 'hold')    this.goPhase('release');
+      else if(this.phase === 'release') this.goPhase('rest');
+      else { this.i = (this.i + 1) % this.words().length; this.announce(); }
     } else {
       this.render(el/d);
     }
-    const self = this;
-    this.raf = requestAnimationFrame(function(){ self.loop(); });
+    clearTimeout(this.raf);
+      this.raf = setTimeout(function(){ self.loop(); }, 33);
   },
 
   start(){
     if(this.running) return;
     this.running = true; this.started = true;
-    this.phase = 'inhale';
-    this.t0 = performance.now(); lastTick = performance.now();
+    lastTick = performance.now();
     $('v-play').textContent = 'Pause';
-    if(S.vSound) beep(440, 0.12);
+    this.speaking = false;
+    keepAwake(true);
+    this.announce();
     this.loop();
   },
   stop(){
-    if(!this.running && !this.started) { this.render(0); return; }
-    this.running = false; cancelAnimationFrame(this.raf);
+    if(!this.running && !this.started){ this.render(0); return; }
+    this.running = false; clearTimeout(this.raf);
+    this.speaking = false;
+    this.speakToken = (this.speakToken || 0) + 1;
+    try{ speechSynthesis.cancel(); }catch(e){}
+    keepAwake(false);
     $('v-play').textContent = this.started ? 'Resume' : 'Start';
     this.render(0);
   },
   toggle(){ this.running ? this.stop() : this.start(); },
   step(d){
     const n = this.words().length;
+    this.speakToken = (this.speakToken || 0) + 1;
+    this.speaking = false;
+    try{ speechSynthesis.cancel(); }catch(e){}
     this.i = (this.i + d + n) % n;
-    this.phase = 'inhale'; this.t0 = performance.now(); this.render(0);
+    if(this.running) this.announce();
+    else { this.phase = 'inhale'; this.t0 = performance.now(); this.render(0); }
   }
 };
 $('v-play').onclick  = function(){ vocal.toggle(); };
@@ -567,6 +780,7 @@ function slider(id, valId, key, fmt){
 }
 slider('v-hold','v-holdv','hold', function(v){ return v.toFixed(1) + ' s'; });
 slider('v-inhale','v-inhalev','inhale', function(v){ return v.toFixed(1) + ' s'; });
+slider('v-release','v-releasev','release', function(v){ return v.toFixed(1) + ' s'; });
 slider('v-rest','v-restv','rest', function(v){ return v.toFixed(1) + ' s'; });
 
 /* ================= SLOW READING ================= */
@@ -654,7 +868,7 @@ const reading = {
         .join('<span class="slash"> / </span>');
 
     const cue = $('r-cue'), bar = $('r-bar');
-    cue.className = 'cue ' + (this.phase === 'read' ? 'speak' : 'inhale');
+    cue.className = 'cue ' + ((this.phase === 'read' || this.phase === 'yours') ? 'speak' : 'inhale');
     if(!this.running){
       cue.textContent = this.started ? 'Paused' : 'Press Start';
       bar.style.width = '0%';
@@ -662,7 +876,12 @@ const reading = {
       cue.textContent = 'Read it aloud — then press Space';
       bar.style.width = '0%';
     } else if(this.phase === 'read'){
-      cue.textContent = 'Read aloud — slowly, lengthened';
+      cue.textContent = (S.ttsMode === 'echo') ? 'Listen'
+                      : (S.ttsMode === 'with') ? 'Read along with the voice'
+                      : 'Read aloud — slowly, lengthened';
+      bar.style.width = (progress*100).toFixed(1) + '%';
+    } else if(this.phase === 'yours'){
+      cue.textContent = 'Your turn — say it';
       bar.style.width = (progress*100).toFixed(1) + '%';
     } else {
       cue.textContent = 'Pause — breathe';
@@ -680,18 +899,47 @@ const reading = {
 
   loop(){
     if(!this.running || this.mode === 'manual') return;
+    const self = this;
+    if(this.speaking){
+      /* the voice is talking - let it finish, just keep the bar moving */
+      this.render(Math.min(1, (performance.now() - this.t0) / this.chunkMs()));
+      clearTimeout(this.raf);
+      this.raf = setTimeout(function(){ self.loop(); }, 33);
+      return;
+    }
     const el = performance.now() - this.t0;
-    const d = (this.phase === 'read') ? this.chunkMs() : S.breath*1000;
+    const d = (this.phase === 'breathe') ? S.breath*1000 : this.chunkMs();
     if(el >= d){
       this.t0 = performance.now();
-      if(this.phase === 'read'){ this.phase = 'breathe'; if(S.rSound) beep(392, 0.12); }
-      else { this.phase = 'read'; this.advance(1); if(S.rSound) beep(523, 0.14); }
+      if(this.phase === 'read' || this.phase === 'yours'){
+        this.phase = 'breathe'; if(S.rSound) beep(392, 0.12);
+      } else {
+        this.phase = 'read'; this.advance(1);
+        if(S.rSound) beep(523, 0.14);
+        this.speakIfNeeded();
+      }
       this.render(0);
     } else {
       this.render(el/d);
     }
+    clearTimeout(this.raf);
+      this.raf = setTimeout(function(){ self.loop(); }, 33);
+  },
+
+  speakIfNeeded(){
+    if(S.ttsMode === 'off' || this.mode === 'manual' || !this.running) return;
     const self = this;
-    this.raf = requestAnimationFrame(function(){ self.loop(); });
+    this.speakToken = (this.speakToken || 0) + 1;
+    const tok = this.speakToken;
+    this.speaking = true;
+    this.t0 = performance.now();
+    say(this.chunk(), function(){
+      if(tok !== self.speakToken || !self.running) return;
+      self.speaking = false;
+      self.t0 = performance.now();
+      self.phase = (S.ttsMode === 'echo') ? 'yours' : 'breathe';
+      self.render(0);
+    });
   },
 
   start(){
@@ -700,17 +948,31 @@ const reading = {
     this.phase = 'read'; this.t0 = performance.now(); lastTick = performance.now();
     $('r-play').textContent = (this.mode === 'manual') ? 'Stop' : 'Pause';
     if(S.rSound) beep(523, 0.14);
+    this.speaking = false;
+    keepAwake(true);
     this.render(0);
+    this.speakIfNeeded();
     this.loop();
   },
   stop(){
     if(!this.running && !this.started){ this.render(0); return; }
-    this.running = false; cancelAnimationFrame(this.raf);
+    this.running = false; clearTimeout(this.raf);
+    this.speaking = false;
+    this.speakToken = (this.speakToken || 0) + 1;
+    try{ speechSynthesis.cancel(); }catch(e){}
+    keepAwake(false);
     $('r-play').textContent = this.started ? 'Resume' : 'Start';
     this.render(0);
   },
   toggle(){ this.running ? this.stop() : this.start(); },
-  step(d){ this.advance(d); this.phase = 'read'; this.t0 = performance.now(); this.render(0); },
+  step(d){
+    this.speakToken = (this.speakToken || 0) + 1;
+    this.speaking = false;
+    try{ speechSynthesis.cancel(); }catch(e){}
+    this.advance(d); this.phase = 'read'; this.t0 = performance.now();
+    this.render(0);
+    this.speakIfNeeded();
+  },
   setMode(m){
     this.mode = m; S.mode = m; save();
     $('r-auto').classList.toggle('on', m === 'auto');
@@ -719,7 +981,7 @@ const reading = {
       ? '<kbd>Space</kbd> next phrase &middot; read each phrase in one breath, pause, then move on'
       : '<kbd>Space</kbd> start / pause &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> move between phrases';
     if(this.running){
-      cancelAnimationFrame(this.raf);
+      clearTimeout(this.raf);
       this.phase = 'read'; this.t0 = performance.now();
       $('r-play').textContent = (m === 'manual') ? 'Stop' : 'Pause';
       this.loop();
@@ -743,9 +1005,195 @@ slider('r-breath','r-breathv','breath', function(v){ return v.toFixed(1) + ' s';
 document.addEventListener('visibilitychange', function(){
   if(document.hidden) return;
   lastTick = performance.now();
+  if(vocal.running || reading.running) keepAwake(true);
   if(vocal.running){ vocal.t0 = performance.now(); vocal.loop(); }
   if(reading.running && reading.mode === 'auto'){ reading.t0 = performance.now(); reading.loop(); }
 });
+
+function paintVbLabel(){
+  const bits = [];
+  if(tab === 0){
+    bits.push(S.sayWord ? 'says each word' : 'word not spoken');
+    bits.push(S.vSound ? 'beeps on' : 'beeps off');
+  } else {
+    bits.push(S.ttsMode === 'echo' ? 'voice: then my turn'
+            : S.ttsMode === 'with' ? 'voice: with me' : 'voice off');
+    bits.push(S.rSound ? 'beeps on' : 'beeps off');
+  }
+  if(S.mirror) bits.push('mirror on');
+  $('vb-label').textContent = bits.join('  ·  ');
+}
+function paintVbOpen(){
+  $('vb-body').classList.toggle('closed', !S.vbOpen);
+  $('vb-toggle').innerHTML = 'Voice &amp; mirror ' + (S.vbOpen ? '&#9652;' : '&#9662;');
+  $('vb-toggle').classList.toggle('on', !!S.vbOpen);
+}
+$('vb-toggle').onclick = function(){ S.vbOpen = !S.vbOpen; save(); paintVbOpen(); };
+
+/* ================= MIRROR (front camera, local only) ================= */
+let mediaStream = null;
+
+function applyMirrorSize(){ $('mirror').style.height = (S.mirrorSize || 30) + 'vh'; }
+
+function stopMirror(){
+  if(mediaStream){
+    mediaStream.getTracks().forEach(function(t){ try{ t.stop(); }catch(e){} });
+    mediaStream = null;
+  }
+  try{ $('mirror-video').srcObject = null; }catch(e){}
+  $('mirror').classList.add('hidden');
+  $('mirror-msg').textContent = '';
+}
+
+function startMirror(){
+  $('mirror').classList.remove('hidden');
+  applyMirrorSize();
+  $('mirror-msg').textContent = 'Starting the camera\u2026';
+  const secure = (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    $('mirror-msg').textContent = secure
+      ? 'This browser will not open the camera here.'
+      : 'The mirror needs the https:// address \u2014 it cannot run from a file opened off the disk.';
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+    .then(function(st){
+      mediaStream = st;
+      const v = $('mirror-video');
+      v.srcObject = st;
+      const pl = v.play();
+      if(pl && pl.catch) pl.catch(function(){});
+      $('mirror-msg').textContent = '';
+    })
+    .catch(function(err){
+      const name = err && err.name;
+      $('mirror-msg').textContent =
+          !secure ? 'The mirror needs the https:// address \u2014 it cannot run from a file opened off the disk.'
+        : (name === 'NotAllowedError' || name === 'SecurityError')
+            ? 'Camera blocked. Allow the camera for this page in your browser settings, then switch the mirror on again.'
+        : (name === 'NotFoundError' || name === 'DevicesNotFoundError')
+            ? 'No camera found on this device.'
+        : (name === 'NotReadableError')
+            ? 'The camera is in use by another app. Close it and try again.'
+        : 'Could not start the camera.';
+    });
+}
+
+function paintMirror(){
+  $('mir-off').classList.toggle('on', !S.mirror);
+  $('mir-on').classList.toggle('on', !!S.mirror);
+  document.querySelectorAll('[data-mir]').forEach(function(b){
+    b.classList.toggle('on', +b.dataset.mir === (S.mirrorSize || 30));
+  });
+  paintVbLabel();
+}
+function setMirror(on){
+  S.mirror = !!on; save(); paintMirror();
+  if(on) startMirror(); else stopMirror();
+}
+$('mir-off').onclick = function(){ setMirror(false); };
+$('mir-on').onclick  = function(){ setMirror(true); };
+document.querySelectorAll('[data-mir]').forEach(function(b){
+  b.onclick = function(){
+    S.mirrorSize = +b.dataset.mir; save(); paintMirror();
+    if(S.mirror) applyMirrorSize();
+  };
+});
+/* release the camera when the page goes away */
+window.addEventListener('pagehide', function(){ stopMirror(); });
+window.addEventListener('resize', function(){ vocal._fsKey = null; vocal.render(0); });
+
+/* ================= COMPUTER VOICE (speech synthesis) ================= */
+let voices = [];
+const hasTTS = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
+
+function refreshVoices(){
+  if(!hasTTS){ $('tts-voice').innerHTML = '<option value="">Not available here</option>'; return; }
+  try{ voices = speechSynthesis.getVoices().filter(function(v){ return /^en/i.test(v.lang); }); }
+  catch(e){ voices = []; }
+  const sel = $('tts-voice');
+  if(!voices.length){ sel.innerHTML = '<option value="">Loading voices…</option>'; return; }
+  voices.sort(function(a, b){
+    const ai = /en[-_]IN/i.test(a.lang) ? 0 : 1, bi = /en[-_]IN/i.test(b.lang) ? 0 : 1;
+    return (ai - bi) || a.name.localeCompare(b.name);
+  });
+  sel.innerHTML = voices.map(function(v){
+    return '<option value="' + esc(v.voiceURI) + '">' + esc(v.name + '  ·  ' + v.lang) + '</option>';
+  }).join('');
+  const found = voices.filter(function(v){ return v.voiceURI === S.voiceURI; })[0];
+  if(found) sel.value = S.voiceURI;
+  else { S.voiceURI = voices[0].voiceURI; sel.value = S.voiceURI; save(); }
+}
+if(hasTTS){ try{ speechSynthesis.onvoiceschanged = refreshVoices; }catch(e){} }
+refreshVoices();
+
+function say(text, done){
+  if(!hasTTS || !text){ if(done) done(); return; }
+  let fired = false;
+  const fin = function(){ if(fired) return; fired = true; if(done) done(); };
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    const v = voices.filter(function(x){ return x.voiceURI === S.voiceURI; })[0];
+    if(v) u.voice = v;
+    u.rate = S.ttsRate || 0.85;
+    u.onend = fin; u.onerror = fin;
+    speechSynthesis.speak(u);
+    /* some engines never fire onend - don't let the practice stall */
+    const words = text.split(/\s+/).filter(Boolean).length;
+    setTimeout(fin, 2500 + words * 1500 / (S.ttsRate || 0.85));
+  }catch(e){ fin(); }
+}
+
+function paintTtsWarn(){
+  const on = (tab === 0) ? S.sayWord : (S.ttsMode !== 'off');
+  $('tts-warn').textContent = on
+    ? 'The computer voice keeps time — it does not demonstrate the long lengthening style. Use the recording above as your model for how it should sound.'
+    : '';
+}
+function paintTtsMode(){
+  $('tts-off').classList.toggle('on',  S.ttsMode === 'off');
+  $('tts-with').classList.toggle('on', S.ttsMode === 'with');
+  $('tts-echo').classList.toggle('on', S.ttsMode === 'echo');
+  $('tts-sayword').classList.toggle('on', !!S.sayWord);
+  $('tts-sayword').textContent = 'Say each word: ' + (S.sayWord ? 'on' : 'off');
+  paintTtsWarn(); paintVbLabel();
+}
+function setTtsMode(m){
+  S.ttsMode = m; save();
+  try{ speechSynthesis.cancel(); }catch(e){}
+  reading.speaking = false;
+  reading.speakToken = (reading.speakToken || 0) + 1;
+  paintTtsMode();
+  if(reading.running && reading.mode === 'auto'){
+    reading.phase = 'read'; reading.t0 = performance.now();
+    reading.render(0); reading.speakIfNeeded();
+  } else reading.render(0);
+}
+$('tts-off').onclick  = function(){ setTtsMode('off'); };
+$('tts-with').onclick = function(){ setTtsMode('with'); };
+$('tts-echo').onclick = function(){ setTtsMode('echo'); };
+$('tts-voice').onchange = function(){ S.voiceURI = this.value; save(); };
+$('tts-sayword').onclick = function(){
+  S.sayWord = !S.sayWord; save(); paintTtsMode();
+  if(S.sayWord && vocal.running) vocal.sayWord();
+};
+slider('tts-rate','tts-ratev','ttsRate', function(v){ return v.toFixed(2) + '×'; });
+
+/* ---- which rows of the voice bar belong to which tab ---- */
+function placeVoiceBar(i){
+  const vb = $('voicebar'), mir = $('mirror');
+  if(i === 2){ vb.style.display = 'none'; mir.style.display = 'none'; return; }
+  vb.style.display = ''; mir.style.display = '';
+  const host = (i === 0) ? $('p-vocal') : $('p-read');
+  const ctrl = (i === 0) ? $('v-controls') : $('r-controls');
+  const stage = (i === 0) ? $('v-stage') : $('r-stage');
+  if(mir.parentNode !== host || mir.nextSibling !== stage) host.insertBefore(mir, stage);
+  if(vb.parentNode !== host || vb.nextSibling !== ctrl) host.insertBefore(vb, ctrl);
+  $('vb-read').classList.toggle('hidden', i !== 1);
+  $('vb-vocal').classList.toggle('hidden', i !== 0);
+  paintTtsWarn(); paintVbLabel();
+}
 
 /* ---------------- keyboard ---------------- */
 document.addEventListener('keydown', function(e){
@@ -777,6 +1225,11 @@ vocal.render(0);
 reading.u = Math.min(S.unit || 0, SOURCES[reading.src].units.length - 1);
 reading.paintSelects();
 reading.setMode(reading.mode);
+paintTtsMode();
+paintMirror();
+paintVbOpen();
+if(S.mirror) startMirror();
+placeVoiceBar(0);
 </script>
 </body>
 </html>
