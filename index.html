@@ -70,7 +70,7 @@
   }
   .cue{
     font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint);
-    height:18px; margin-bottom:6px;
+    min-height:18px; line-height:1.5; margin-bottom:8px; padding:0 8px;
   }
   .cue.inhale{color:var(--accent)} .cue.speak{color:var(--accent2)} .cue.rest{color:var(--faint)}
 
@@ -184,12 +184,25 @@
   .card ol{margin:0;padding-left:20px;color:var(--dim);font-size:14px}
   .card ol li{margin-bottom:6px}
 
-  @media (max-width:640px){
-    header{gap:8px;padding:8px 10px}
-    .brand{font-size:13px} .brand span{display:none}
+  @media (max-width:760px){
+    header{gap:8px;padding:8px 10px;justify-content:space-between}
+    .brand{display:none}
+    .spacer{display:none}
+    nav{flex:1}
+    nav button{padding:7px 8px;font-size:12.5px;white-space:nowrap;flex:1}
     .today{font-size:11px;padding:5px 9px;gap:8px}
+    .iconbtn{width:30px;height:30px;font-size:13px}
+    .stage{min-height:0;padding:16px 14px}
     .fulltext{display:none}
-    .btn.primary{min-width:110px}
+    .btn.primary{min-width:104px}
+    .row{gap:8px}
+    .row + .row{margin-top:9px}
+    select{font-size:12.5px;padding:7px 8px}
+    .wordstrip{padding:6px 10px 0;gap:5px}
+    .wordstrip button{font-size:11px;padding:3px 7px}
+    .controls{padding:10px 12px 12px}
+    .sliders{gap:10px}
+    label.sl{min-width:132px;flex:1}
   }
 </style>
 </head>
