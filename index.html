@@ -163,6 +163,62 @@
     border-bottom-width:2px;border-radius:5px;padding:1px 5px;color:var(--dim);background:var(--card)
   }
 
+  /* ---------- drawer ---------- */
+  .scrim{
+    position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:40;
+    opacity:0; pointer-events:none; transition:opacity .18s ease;
+  }
+  .scrim.on{opacity:1; pointer-events:auto}
+  .drawer{
+    position:fixed; top:0; right:0; height:100%; width:min(360px,88vw); z-index:50;
+    background:var(--bg2); border-left:1px solid var(--line);
+    transform:translateX(102%); transition:transform .22s ease;
+    display:flex; flex-direction:column; box-shadow:-12px 0 40px rgba(0,0,0,.35);
+  }
+  .drawer.open{transform:none}
+  .drawer-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 14px; border-bottom:1px solid var(--line); flex:none; font-size:15px;
+  }
+  .drawer-body{overflow-y:auto; padding:6px 14px 40px; -webkit-overflow-scrolling:touch}
+  .dsec{padding:14px 0; border-bottom:1px solid var(--line)}
+  .dsec:last-child{border-bottom:0}
+  .dsec.hidden{display:none}
+  .dsec h4{
+    margin:0 0 10px; font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--faint); font-weight:600;
+  }
+  .dsec .sl{min-width:0; width:100%; margin:10px 0}
+  .drow{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:8px 0}
+  .drow select{flex:1; max-width:100%; min-width:0}
+  .dlab{font-size:12.5px; color:var(--dim)}
+  .dval{font-size:13px; color:var(--ink); font-variant-numeric:tabular-nums; margin-left:auto}
+  .drow .dval + .dlab{margin-left:0}
+  .dnote{font-size:11.5px; line-height:1.5; color:var(--warm); margin:10px 0 0}
+  .dnote:empty{display:none}
+  .mini{
+    border:1px solid var(--line); background:var(--card); color:var(--dim);
+    border-radius:8px; padding:6px 11px; font-size:12.5px; white-space:nowrap;
+  }
+  .mini:hover{border-color:var(--accent)}
+  .mini.on{border-color:var(--accent2); color:var(--ink); background:rgba(126,224,192,.14)}
+
+  /* ---------- deep breathing ---------- */
+  .bring{
+    position:relative; width:min(58vw,260px); height:min(58vw,260px);
+    margin:0 auto 6px; display:grid; place-items:center;
+    border:2px solid var(--line); border-radius:50%;
+  }
+  .bring i{
+    position:absolute; inset:0; border-radius:50%;
+    background:var(--accent); opacity:.20; transform:scale(.25);
+  }
+  .bring span{
+    position:relative; font-family:var(--read-font); font-weight:600;
+    font-size:clamp(46px,13vw,96px); line-height:1; color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+
   /* ---------- mirror ---------- */
   .mirror{
     position:relative; width:100%; background:#000; overflow:hidden; flex:none;
@@ -179,29 +235,6 @@
     background:var(--card);
   }
   .mirror-msg:empty{display:none}
-
-  /* ---------- voice bar ---------- */
-  .voicebar{border-top:1px solid var(--line);background:var(--bg2);padding:9px 16px 2px}
-  .vb{max-width:1000px;margin:0 auto;display:flex;gap:9px;align-items:center;flex-wrap:wrap;justify-content:center}
-  .vb + .vb{margin-top:8px}
-  .vb.hidden{display:none}
-  .vbtag{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
-  .mini{
-    border:1px solid var(--line);background:var(--card);color:var(--dim);
-    border-radius:8px;padding:6px 10px;font-size:12px;white-space:nowrap;
-  }
-  .mini:hover:not(:disabled){border-color:var(--accent)}
-  .mini.on{border-color:var(--accent2);color:var(--ink);background:rgba(126,224,192,.14)}
-  .mini:disabled{opacity:.35;cursor:default}
-  .warn{font-size:11.5px;color:var(--warm);text-align:center;max-width:640px;margin:8px auto 0;line-height:1.5}
-  .warn:empty{margin:0}
-  .vbhead{gap:10px}
-  #vb-body.closed{display:none}
-  #vb-label{
-    flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    letter-spacing:.04em;text-transform:none;font-size:12px;min-width:0;
-  }
-  #tts-voice{max-width:min(240px,50vw);font-size:12.5px;padding:6px 8px}
 
   /* ---------- guide ---------- */
   .guide{max-width:880px;margin:0 auto;padding:26px 20px 60px;line-height:1.65}
@@ -232,6 +265,7 @@
     nav{flex:1}
     nav button{padding:7px 8px;font-size:12.5px;white-space:nowrap;flex:1}
     .today{font-size:11px;padding:5px 9px;gap:8px}
+    .bring{width:min(52vw,220px);height:min(52vw,220px)}
     .iconbtn{width:30px;height:30px;font-size:13px}
     .stage{min-height:0;padding:16px 14px}
     .fulltext{display:none}
@@ -250,19 +284,15 @@
 <body>
 
 <header>
-  <div class="brand">Daily Speech Practice <span>&middot; Practice Material Book I</span></div>
+  <button class="iconbtn" id="menu-btn" title="Settings" aria-label="Settings">&#9776;</button>
   <nav role="tablist">
-    <button role="tab" id="tab-vocal" aria-selected="true">Vocal Exercise</button>
-    <button role="tab" id="tab-read" aria-selected="false">Slow Reading</button>
+    <button role="tab" id="tab-vocal" aria-selected="true">Vocal</button>
+    <button role="tab" id="tab-read" aria-selected="false">Reading</button>
+    <button role="tab" id="tab-breath" aria-selected="false">Breathing</button>
     <button role="tab" id="tab-guide" aria-selected="false">Guide</button>
   </nav>
   <div class="spacer"></div>
-  <div class="today" title="Time practised today (counts only while running)">
-    <span>Today</span>
-    <span>Vocal <b id="t-vocal">0:00</b>/15</span>
-    <span>Reading <b id="t-read">0:00</b>/15</span>
-  </div>
-  <button class="iconbtn" id="themeBtn" title="Light / dark">&#9686;</button>
+  <div class="today" id="today-chip" title="Time practised today"><span id="t-now">0:00</span></div>
 </header>
 
 <main>
@@ -281,64 +311,12 @@
       <div class="counter" id="v-count">Lesson 1 &middot; word 1 of 15</div>
     </div>
     <div class="wordstrip" id="v-strip"></div>
-    <div class="voicebar" id="voicebar">
-      <div class="vb vbhead">
-        <span class="vbtag" id="vb-label"></span>
-        <button class="mini" id="vb-toggle">Voice &amp; mirror &#9662;</button>
-      </div>
-      <div id="vb-body" class="closed">
-        <div class="vb" id="vb-vocal">
-          <span class="vbtag">Spoken word</span>
-          <button class="mini" id="tts-sayword">Say each word: off</button>
-          <span class="vbtag" style="margin-left:8px">Beeps</span>
-          <span class="seg"><button id="v-sound-off" class="on">Off</button><button id="v-sound-on">On</button></span>
-        </div>
-        <div class="vb hidden" id="vb-read">
-          <span class="vbtag">Computer voice</span>
-          <span class="seg">
-            <button id="tts-off" class="on">Off</button>
-            <button id="tts-with">Speak with me</button>
-            <button id="tts-echo">Speak, then my turn</button>
-          </span>
-          <span class="vbtag" style="margin-left:8px">Beeps</span>
-          <span class="seg"><button id="r-sound-off" class="on">Off</button><button id="r-sound-on">On</button></span>
-        </div>
-        <div class="vb">
-          <span class="vbtag">Mirror</span>
-          <span class="seg"><button id="mir-off" class="on">Off</button><button id="mir-on">On</button></span>
-          <span class="vbtag" style="margin-left:8px">Size</span>
-          <button class="mini" data-mir="22">Small</button>
-          <button class="mini on" data-mir="30">Medium</button>
-          <button class="mini" data-mir="42">Large</button>
-        </div>
-        <div class="vb">
-          <span class="vbtag">Voice</span>
-          <select id="tts-voice"></select>
-          <label class="sl" style="min-width:128px;max-width:180px">Voice speed <b id="tts-ratev">0.85&times;</b>
-            <input type="range" id="tts-rate" min="0.5" max="1.2" step="0.05" value="0.85"></label>
-        </div>
-        <div class="warn" id="tts-warn"></div>
-      </div>
-    </div>
     <div class="controls" id="v-controls">
       <div class="row">
         <button class="btn" id="v-prev">&lsaquo; Prev</button>
         <button class="btn primary" id="v-play">Start</button>
         <button class="btn" id="v-next">Next &rsaquo;</button>
-        <select id="v-lesson"></select>
-        <button class="btn ghost" id="v-reset">Restart lesson</button>
       </div>
-      <div class="row sliders">
-        <label class="sl">Stretch the vowel <b id="v-holdv">5.0 s</b>
-          <input type="range" id="v-hold" min="2" max="10" step="0.5" value="5"></label>
-        <label class="sl">Breathe in <b id="v-inhalev">3.0 s</b>
-          <input type="range" id="v-inhale" min="1.5" max="6" step="0.5" value="3"></label>
-        <label class="sl">Then finish the word <b id="v-releasev">1.2 s</b>
-          <input type="range" id="v-release" min="0.5" max="4" step="0.1" value="1.2"></label>
-        <label class="sl">Rest between words <b id="v-restv">1.5 s</b>
-          <input type="range" id="v-rest" min="0.5" max="5" step="0.5" value="1.5"></label>
-      </div>
-      <div class="hint"><kbd>Space</kbd> start / pause &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> move between words &middot; practise in front of a mirror when you can</div>
     </div>
   </section>
 
@@ -358,20 +336,25 @@
         <button class="btn" id="r-prevbtn">&lsaquo; Prev</button>
         <button class="btn primary" id="r-play">Start</button>
         <button class="btn" id="r-nextbtn">Next &rsaquo;</button>
-        <span class="seg"><button id="r-auto" class="on">Auto pace</button><button id="r-manual">I tap myself</button></span>
       </div>
+      <div class="hint" id="r-hint"></div>
+    </div>
+  </section>
+
+  <!-- ============ DEEP BREATHING ============ -->
+  <section class="panel" id="p-breath">
+    <div class="stage" id="b-stage">
+      <div class="cue" id="b-cue">Press Start</div>
+      <div class="bring"><i id="b-ring"></i><span id="b-num">&middot;</span></div>
+      <div class="bar"><i id="b-bar"></i></div>
+      <div class="counter" id="b-count">Breath 1 of 20</div>
+      <div class="hint" id="b-hint">Sit straight, back straight, eyes level. Right hand resting on your stomach.</div>
+    </div>
+    <div class="controls" id="b-controls">
       <div class="row">
-        <select id="r-source"></select>
-        <select id="r-unit"></select>
-        <button class="btn ghost" id="r-restart">Restart</button>
+        <button class="btn" id="b-reset">Restart</button>
+        <button class="btn primary" id="b-play">Start</button>
       </div>
-      <div class="row sliders">
-        <label class="sl">Speaking pace <b id="r-pacev">0.70 s / word</b>
-          <input type="range" id="r-pace" min="0.3" max="1.6" step="0.05" value="0.7"></label>
-        <label class="sl">Pause at each slash <b id="r-breathv">1.5 s</b>
-          <input type="range" id="r-breath" min="0.4" max="5" step="0.1" value="1.5"></label>
-      </div>
-      <div class="hint" id="r-hint"><kbd>Space</kbd> start / pause &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> move between phrases</div>
     </div>
   </section>
 
@@ -386,7 +369,7 @@
       <p>From the book's general guidelines. The two practices this page covers are highlighted.</p>
       <table>
         <tr><th>Practice</th><th>Minutes</th></tr>
-        <tr><td>A) Deep Breathing Exercise</td><td>3</td></tr>
+        <tr class="hl"><td>A) Deep Breathing Exercise</td><td>3</td></tr>
         <tr><td>B) Pranayama</td><td>3</td></tr>
         <tr><td>C) Meditation</td><td>8</td></tr>
         <tr class="hl"><td>D) Vocal Exercises</td><td>15</td></tr>
@@ -402,13 +385,17 @@
       <div class="card">
         <h3>Vocal Exercise &mdash; how the page paces it</h3>
         <ol>
-          <li>Every word in Vocal Exercise&nbsp;I begins with a vowel. The <span style="color:var(--accent2)">coloured</span> first letter is the sound you stretch.</li>
+          <li>Every word in these exercises begins with a vowel. The <span style="color:var(--accent2)">coloured</span> first letter is the sound you stretch.</li>
           <li>The word is <b>spoken</b> first, so you know what is coming.</li>
           <li><b>Breathe in</b> while the circle grows. The book suggests inhaling through the mouth for a short initial period, then switching to the nose.</li>
           <li><b>Stretch the vowel</b> as the bar fills, and hold it the whole length of the bar &mdash; <i>Aaaaaaaa</i>. On screen the vowel grows one letter at a time. No push, no force; throat, tongue, lips and jaw stay loose.</li>
           <li><b>Finish the word</b> when the rest of it turns <span style="color:var(--warm)">amber</span> and the bar drains &mdash; <i>&hellip;pple</i>.</li>
           <li><b>Rest</b>, and the next word arrives on its own.</li>
-          <li>Six lessons, 80 words. Work through them for about 15 minutes. The four sliders below set the length of each stage.</li>
+          <li>All three parts of the exercise are here &mdash; pick any lesson from the list:
+            <b>Vocal Exercise&nbsp;I</b> (6 lessons, 80 words),
+            <b>II</b> (7 lessons, 78 words) and
+            <b>III</b> (9 lessons, 129 words). 287 words in all.
+            Work through them for about 15 minutes. The four sliders below set the length of each stage.</li>
         </ol>
       </div>
 
@@ -455,6 +442,29 @@
         </ol>
       </div>
 
+      <div class="card">
+        <h3>Deep breathing</h3>
+        <ol>
+          <li>Sit straight on a chair, back straight, looking straight ahead at eye level. Rest your right hand on your stomach so you can feel it rise as you breathe in and fall as you breathe out.</li>
+          <li>Breathe <b>in through the nose</b> while the circle grows and the count runs up to eight, then <b>out</b> while it shrinks and the count runs back down. Never hold the breath at either end.</li>
+          <li>Correct breathing is <b>noiseless</b> &mdash; you should not be able to hear yourself. Keep the throat, chest and abdomen loose.</li>
+          <li>The page counts the breaths for you, so both hands stay free and relaxed. The book has you counting to twenty on your left hand; there is no need to here.</li>
+          <li>Avoid practising in a polluted place, or within two hours of a heavy meal.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h3>Meditation &mdash; do this one from the book</h3>
+        <p style="margin:0;color:var(--dim);font-size:14px">
+          Meditation is deliberately left out of this page. Its first stage asks you to close your eyes and
+          count down <i>mentally</i> from 100, imagining the numbers written in front of you, or to picture a
+          circle shrinking to a dot. A screen counting for you would be doing the very work the exercise is
+          meant to make <i>you</i> do. The later stages &mdash; emptying the mind, then meditating on the
+          points &mdash; are done with the eyes closed from memory, having read the points beforehand.
+          Nothing on a screen helps with that. Read those pages, then put the book down and close your eyes.
+        </p>
+      </div>
+
       <h2>Points the book keeps coming back to</h2>
       <ul>
         <li>Practise <b>early in the morning</b>, when it is quiet and the mind is fresh.</li>
@@ -477,18 +487,110 @@
   </section>
 </main>
 
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Settings">
+  <div class="drawer-head">
+    <b>Settings</b>
+    <button class="iconbtn" id="drawer-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="drawer-body">
+
+    <section class="dsec" id="d-vocal">
+      <h4>Vocal exercise</h4>
+      <div class="drow"><select id="v-lesson"></select></div>
+      <div class="drow"><button class="mini" id="v-reset">Restart this lesson</button></div>
+      <label class="sl">Stretch the vowel <b id="v-holdv">5.0 s</b>
+        <input type="range" id="v-hold" min="2" max="10" step="0.5" value="5"></label>
+      <label class="sl">Breathe in <b id="v-inhalev">3.0 s</b>
+        <input type="range" id="v-inhale" min="1.5" max="6" step="0.5" value="3"></label>
+      <label class="sl">Then finish the word <b id="v-releasev">1.2 s</b>
+        <input type="range" id="v-release" min="0.5" max="4" step="0.1" value="1.2"></label>
+      <label class="sl">Rest between words <b id="v-restv">1.5 s</b>
+        <input type="range" id="v-rest" min="0.5" max="5" step="0.5" value="1.5"></label>
+      <div class="drow"><span class="dlab">Say each word</span>
+        <button class="mini" id="tts-sayword">off</button></div>
+      <div class="drow"><span class="dlab">Beeps</span>
+        <span class="seg"><button id="v-sound-off" class="on">Off</button><button id="v-sound-on">On</button></span></div>
+    </section>
+
+    <section class="dsec" id="d-read">
+      <h4>Slow reading</h4>
+      <div class="drow"><select id="r-source"></select></div>
+      <div class="drow"><select id="r-unit"></select></div>
+      <div class="drow"><button class="mini" id="r-restart">Back to the start</button></div>
+      <div class="drow"><span class="dlab">Pacing</span>
+        <span class="seg"><button id="r-auto" class="on">Auto</button><button id="r-manual">I tap</button></span></div>
+      <label class="sl">Speaking pace <b id="r-pacev">0.70 s / word</b>
+        <input type="range" id="r-pace" min="0.3" max="1.6" step="0.05" value="0.7"></label>
+      <label class="sl">Pause at each slash <b id="r-breathv">1.5 s</b>
+        <input type="range" id="r-breath" min="0.4" max="5" step="0.1" value="1.5"></label>
+      <div class="drow"><span class="dlab">Computer voice</span></div>
+      <div class="drow"><span class="seg">
+        <button id="tts-off" class="on">Off</button>
+        <button id="tts-with">With me</button>
+        <button id="tts-echo">Then my turn</button></span></div>
+      <div class="drow"><span class="dlab">Beeps</span>
+        <span class="seg"><button id="r-sound-off" class="on">Off</button><button id="r-sound-on">On</button></span></div>
+    </section>
+
+    <section class="dsec" id="d-breath">
+      <h4>Deep breathing</h4>
+      <label class="sl">Count to <b id="b-countsv">8</b>
+        <input type="range" id="b-counts" min="4" max="12" step="1" value="8"></label>
+      <label class="sl">Each count lasts <b id="b-speedv">0.60 s</b>
+        <input type="range" id="b-speed" min="0.35" max="1.5" step="0.05" value="0.6"></label>
+      <label class="sl">Breaths in a round <b id="b-targetv">20</b>
+        <input type="range" id="b-target" min="5" max="40" step="1" value="20"></label>
+      <div class="drow"><span class="dlab">Say the count</span>
+        <button class="mini" id="b-say">off</button></div>
+      <div class="drow"><span class="dlab">Beep at the turn</span>
+        <span class="seg"><button id="b-sound-off" class="on">Off</button><button id="b-sound-on">On</button></span></div>
+      <p class="dnote" id="b-len"></p>
+    </section>
+
+    <section class="dsec">
+      <h4>Mirror</h4>
+      <div class="drow"><span class="dlab">Front camera</span>
+        <span class="seg"><button id="mir-off" class="on">Off</button><button id="mir-on">On</button></span></div>
+      <div class="drow"><span class="dlab">Size</span>
+        <button class="mini" data-mir="22">Small</button>
+        <button class="mini on" data-mir="30">Medium</button>
+        <button class="mini" data-mir="42">Large</button></div>
+    </section>
+
+    <section class="dsec">
+      <h4>Voice</h4>
+      <div class="drow"><select id="tts-voice"></select></div>
+      <label class="sl">Voice speed <b id="tts-ratev">0.85&times;</b>
+        <input type="range" id="tts-rate" min="0.5" max="1.2" step="0.05" value="0.85"></label>
+      <p class="dnote" id="tts-warn"></p>
+    </section>
+
+    <section class="dsec">
+      <h4>Today</h4>
+      <div class="drow"><span class="dlab">Vocal exercise</span><b class="dval" id="t-vocal">0:00</b><span class="dlab">/ 15 min</span></div>
+      <div class="drow"><span class="dlab">Slow reading</span><b class="dval" id="t-read">0:00</b><span class="dlab">/ 15 min</span></div>
+      <div class="drow"><span class="dlab">Deep breathing</span><b class="dval" id="t-breath">0:00</b><span class="dlab">/ 3 min</span></div>
+      <div class="drow"><span class="dlab">Appearance</span>
+        <button class="mini" id="themeBtn">Light / dark</button></div>
+    </section>
+
+  </div>
+</aside>
+
 <script>
-const DATA = {"vocal": [["APPLE", "ABSENT", "ACTION", "ADD", "ADDRESS", "ADMIT", "ALBUM", "AFRICA", "AND", "ANIMAL", "APPLY", "ARREST", "ASH", "ATLAS", "ATTEND"], ["ARM", "AFTER", "ARMY", "ARTICLE", "ARCH", "AUNT", "AUNTY", "EARTH", "ICE", "IRON", "ITEM", "OUR", "OUT"], ["EAT", "EATEN", "ENGLISH", "EVEN", "EACH", "ELEVEN", "IF", "IN", "ILL", "INCH", "INSIDE", "INDIA", "INDOOR", "INCOME", "INITIAL"], ["OBEY", "OLD", "OLDER", "OPEN", "ORAL", "OVAL", "OVER", "OWN", "OVERALL", "OASIS", "OKAY"], ["ORANGE", "OBJECT", "ODD", "OFFER", "OFFICER", "OFTEN", "OMIT", "ON", "OR", "ORBIT", "ORDER", "OX", "OMELETTE"], ["ELEPHANT", "AGE", "AIM", "AIRY", "ANY", "ANYONE", "ASIA", "EGG", "EIGHT", "EIGHTEEN", "ELDER", "ENTER", "END"]], "instructions": [{"n": 1, "chunks": ["The first thing you must do", "is to admit to yourself that", "you need to change and", "that you really want to do", "something about your speech."]}, {"n": 2, "chunks": ["During the initial period", "of the course always use", "smaller sentences while speaking."]}, {"n": 3, "chunks": ["Always think before speaking", ". Arrange the words you want", "to speak in your mind", "and then talk slowly", "without any rush or panic."]}, {"n": 4, "chunks": ["Try to maintain normal eye contact", "with the person you are talking to.", "It helps you to build", "your self confidence and", "magnifies the personal impact."]}, {"n": 5, "chunks": ["You have the ability to", "communicate normally but the fear", "or anticipation of fear generates", "unnecessary tension into your", "speech mechanism and disfluency starts."]}, {"n": 6, "chunks": ["If you can become desensitized", "and learn that you do not", "have to panic when stammering", "is anticipated or experienced", "progress will come more swiftly."]}, {"n": 7, "chunks": ["Take a positive attitude", "and always tell yourself", "“Yes I can talk fluently”."]}, {"n": 8, "chunks": ["As soon as you", "start speaking little better", "you will build up a positive attitude", "to drive out all the", "unpleasant feelings about speaking."]}, {"n": 9, "chunks": ["If you sometimes faulter,", "try to forget it immediately", "so that it will not", "penetrate your mind."]}, {"n": 10, "chunks": ["Distract your mind from", "thoughts of fear so that", "you can interact with people easily."]}, {"n": 11, "chunks": ["Resist all sorts of tension, panic,", "urgency and pressure while talking."]}, {"n": 12, "chunks": ["Try to stop exerting force", "to produce proper speech desperately", "definitely you will be able to", "speak with no or little problem."]}, {"n": 13, "chunks": ["Always keep cool calm and quiet", "even if you do not speak", "so that the calmness enters your system."]}, {"n": 14, "chunks": ["Do not go into controversial or", "exciting discussions with friends, relatives and", "family members for some period", "of time till you attain", "complete control over your speech."]}, {"n": 15, "chunks": ["Sometimes practice walking fast", "and talking slow.", "It will help you to", "control your speed of speech", "while talking to a fast speaking person."]}, {"n": 16, "chunks": ["You may frequently feel the need", "to speak very fast", "while you anticipate stammering.", "But instead if you can speak slowly", "you can reduce tension and anxiety", "as well as other problems of speech."]}, {"n": 17, "chunks": ["Keep yourself relaxed and breathe deeply.", "Regard the tendency to be nervous", "as nature’s way of preparing", "you to be mentally strong."]}, {"n": 18, "chunks": ["Cultivate the habit of speaking directly.", "Avoid communication in a", "round about manner.", "Be direct and firm."]}, {"n": 19, "chunks": ["Your stammering is the result", "of something you do,", "not something that happens to you.", "It is a behavior, not a condition", ". The mistakes you make can be", "corrected with a", "little effort and courage."]}, {"n": 20, "chunks": ["You need not surrender helplessly", "to your speech difficulty because", "you can change the way of", "speaking to a correct one and", "learn to communicate with ease."]}, {"n": 21, "chunks": ["Your fundamental task is to alter", "your speech behavior and to", "bring about positive changes", "in your self perception and feelings."]}, {"n": 22, "chunks": ["Try to develop a “Killers Instinct”", "within yourself to", "fight against stammering."]}, {"n": 23, "chunks": ["To be successful concentrate more", "on your strength and future possibilities", "rather than your weakness and past failures."]}, {"n": 24, "chunks": ["No matter what the situation,", "gain courage instantly,", "go ahead smartly and speak."]}, {"n": 25, "chunks": ["Never try to compete regarding speed.", "Do not follow others as you", "have your own style of speaking."]}, {"n": 26, "chunks": ["Keep in mind that your", "slow and relaxed speaking style", "is unique excellent and", "praised by quality people.", "Most of the learned and", "quality speakers speak slowly softly", "and in a relaxed manner."]}, {"n": 27, "chunks": ["Do not permit other people’s impatience", "or hurry to disturb you.", "If you continue to", "speak in slow manner,", "you may be surprised that others", "will also talk slowly to you."]}, {"n": 28, "chunks": ["Do not feel that everybody is", "looking at you or be over-conscious", "that everybody is observing", "your faltered speech.", "Do not be harsh on yourself."]}, {"n": 29, "chunks": ["Being over-conscious of your", "speech problem may hamper its", "natural fluency and result in", "increased tension and anxiety."]}, {"n": 30, "chunks": ["While speaking feared words, if any,", "try to keep yourself", "calm and relaxed."]}, {"n": 31, "chunks": ["Practice sincerely consistently and patiently.", "You are sure to", "get over a life time hurdle."]}, {"n": 32, "chunks": ["Your commitment must be total.", "Not even a small", "part of you must hold back.", "Don’t dwell longingly on your", "fluency in the magical belief that", "some day your speech blocks", "will disappear on its own."]}, {"n": 33, "chunks": ["Always remember if you speak well,", "you will regain your confidence", "and on the contrary,", "your confidence will be down", "in case of more problem."]}, {"n": 34, "chunks": ["After analyzing in which particular", "speech organ the most tension is mounting,", "it is easy to work on", "your speech by relaxing those muscles."]}, {"n": 35, "chunks": ["When you find some improvement", "within a few days,", "continue the practices", "more spiritedly with enthusiasm."]}, {"n": 36, "chunks": ["You have no physical disability,", "so nothing can stop you", "from speaking normally."]}, {"n": 37, "chunks": ["You tend to consider your", "difficulties of speech to be unique,", "it is because you spend", "too much time thinking about them.", "It is like other common", "problems of human beings."]}, {"n": 38, "chunks": ["Always feel your speech organs", "whether they are relaxed", "loose and smooth."]}, {"n": 39, "chunks": ["As soon as a question is asked,", "listen carefully, understand it quickly", "and reply naturally slowly", "choosing the correct words."]}, {"n": 40, "chunks": ["Sometimes you tend to apply", "lot of force while speaking.", "Speech is a very sensitive matter.", "Always try to make", "your speech effortless."]}, {"n": 41, "chunks": ["Reducing the speed of speaking is", "very effective to combat your problems.", "Increase your speed gradually as you", "become more accustomed to fluent speaking."]}, {"n": 42, "chunks": ["When you solve one problem,", "you will gain confidence", "and be self-sufficient.", "Be more trustful of yourself", "that you are capable of", "solving more bigger problems."]}, {"n": 43, "chunks": ["A sincere compliment about your", "improvement in speech is one", "of the most effective", "ways to motivate yourself."]}, {"n": 44, "chunks": ["If some problem comes", "do not worry – take it sportingly,", "keep in mind that it will", "vanish within a short time", "and continue to practice hard."]}, {"n": 45, "chunks": ["Remember that the more", "you avoid stammering", "more is the fear of stammering.", "The more you are afraid,", "more problem will come.", "So you will be caught", "in a vicious cycle."]}, {"n": 46, "chunks": ["Firmly tell yourself", "‘I can change and eliminate", "the bad habit whenever I choose.’"]}, {"n": 47, "chunks": ["The harder you are on yourself,", "the easier will be your life,", "the easier you are on yourself,", "more hard will be your life."]}, {"n": 48, "chunks": ["Always be hopeful for the", "next moment to be positive and bright."]}, {"n": 49, "chunks": ["Stammering is something you are doing", "unconsciously and you can learn to", "change what you are doing consciously."]}, {"n": 50, "chunks": ["If you stammer slightly,", "it would not hamper your speech,", "but if you think depressing thoughts", "and negative thoughts about stammering,", "it would deteriorate your speech more."]}, {"n": 51, "chunks": ["Remove all negative words like", "“failure” “problem” “incapable” “defeat” “pessimism”", "“trouble” “pain” “suffering” from", "your mind and thoughts."]}, {"n": 52, "chunks": ["In future always expect good things", "– success good health, achievement and prosperity.", "Replace despair by hope and", "announce a war on negative thinking."]}, {"n": 53, "chunks": ["Think that so many people", "have lifelong defects and", "have to suffer throughout.", "Your problem is easily curable", "and you are in a better position."]}, {"n": 54, "chunks": ["Always try to make", "life feel good.", "So never feel bad,", "about your life particularly with", "regard to your speech."]}, {"n": 55, "chunks": ["If your speech is improving slowly", "do not feel afraid,", "worry may come if", "improvement is at a standstill."]}, {"n": 56, "chunks": ["Your thinking makes all the difference.", "If you think that", "you are fluent,", "you can speak easily.", "If you think that you can’t", "speak properly then definitely", "speech blocks will come."]}, {"n": 57, "chunks": ["Those having speech problem,", "use tricks to avoid them.", "Try not to use such tricks.", "Talk in a direct manner", "otherwise you may feel a desperate need", "to use those tricks frequently and", "may become dependant on them."]}, {"n": 58, "chunks": ["Avoidance can be defined as", "a process of shying away from the", "responsibility of facing your problem.", "Actually what happens is that", "the more you cover up", "and try to avoid", "the more you will stammer."]}, {"n": 59, "chunks": ["You should develop a conscience", "which itself will penalize", "the tendency to avoid."]}, {"n": 60, "chunks": ["Identify and eliminate any unusual gestures,", "facial distortions or body movements", "which possibly you may exhibit", "when stammer or trying to", "avoid the speech difficulties."]}, {"n": 61, "chunks": ["Remember that speech sounds better", "in short phrases with", "regular pauses at correct places."]}, {"n": 62, "chunks": ["Stammering itself is not a problem", "but to think about it", "always is a problem."]}, {"n": 63, "chunks": ["Do not avoid certain words or", "situations that trigger stammering.", "Face them head-on.", "It is far better to", "face the situation and stammer", "than to avoid speaking because", "the fear of stammering mounts", "and compounds the problem."]}, {"n": 64, "chunks": ["Panic, tension and overwhelming urgency", "are the hallmark of stammering.", "They are what you need to overcome."]}, {"n": 65, "chunks": ["Never quit under any circumstances,", "from your ultimate target of", "becoming a confident and fluent speaker."]}, {"n": 66, "chunks": ["Anyone can succeed if", "he is enthusiastic about life,", "even when life seems to be empty.", "Doors of opportunity open", "to the enthusiastic first."]}, {"n": 67, "chunks": ["Control your internal dialogue.", "Talk to yourself", "always in a positive manner."]}, {"n": 68, "chunks": ["If you have the goal of", "becoming a fluent speaker and", "positively day by day", "week by week and work very hard", "sincerely and dedicatedly towards it", "definitely you will achieve success."]}, {"n": 69, "chunks": ["More and more dedicated effort", "means lesser time to", "overcome your speech difficulties."]}, {"n": 70, "chunks": ["Progress towards your target", "is never going to be", "a straight smooth line.", "Sometimes it will go up", "and at times down.", "Don’t worry when it is down.", "Look at it as an assurance", "that down soon follows the up."]}, {"n": 71, "chunks": ["Look at your shortcomings", "and faults and believe that", "you can improve yourself."]}, {"n": 72, "chunks": ["Choose to be with people", "who make you happy", "rather than with people", "who let you down", "and always discourage you."]}, {"n": 73, "chunks": ["When you are full of energy", "and hope you see doors and", "windows of opportunities all around you."]}, {"n": 74, "chunks": ["If you pretend to be a fluent speaker", "it will not help you.", "Instead if stammering comes", "let it come openly.", "It will reduce your feeling of shame", "and guilt and slowly you", "will be more and more", "free to talk properly."]}, {"n": 75, "chunks": ["When you utter feared words", "easily and handle feared situations comfortably", "you have made an achievement."]}, {"n": 76, "chunks": ["Take care not to build up", "air pressure behind your lips", "or tongue pressing tightly", "against your gum or palate."]}, {"n": 77, "chunks": ["Concentrate in controlling the lip muscles", "so that they just touch and", "air is able to flow between them."]}, {"n": 78, "chunks": ["Always speak in a slow relaxed style", "and take utmost care so that", "the fear and the bad habit", "does not come back and", "you maintain a relaxed speech pattern.", "In this manner you will be", "moving slowly and gently to the", "desired goal of a fluent speaker."]}, {"n": 79, "chunks": ["Try to arrest the growth of", "fear and anxiety which are the two", "main negative pillars of normal speech."]}, {"n": 80, "chunks": ["It will take some time and", "effort to change anything for a", "life time and it includes", "your problem also."]}, {"n": 81, "chunks": ["The goal you desire to reach", "can be reached much faster", "if you are happy and pleasant."]}, {"n": 82, "chunks": ["Stammering is your problem.", "The expert can tell you", "what to do and how to", "do it, but you are the one", "who has to do it.", "You are the only person", "onearth who can", "correct your problem."]}, {"n": 83, "chunks": ["Now that you are trying", "sincerely to get rid of stammering", "it is an ideal indication that", "you will regain your fluency", "within a short time."]}, {"n": 84, "chunks": ["Your defective style of speaking", "has to be replaced by a", "correct way of speaking.", "To achieve this you must be", "committed to yourself whole heartedly with", "single-minded concentration and devotion."]}, {"n": 85, "chunks": ["If you hide your problem", "you cannot reduce your fear", "at the same time.", "Rather allow little stammering,", "get the fluency and", "increase your confidence."]}, {"n": 86, "chunks": ["Your fear may be of certain words,", "sounds, some persons, certain situations,", "telephone call, saying your name etc.", "When you have little fear,", "you have less tension and", "probably will not have as much", "difficulty in expressing yourselves adequately."]}, {"n": 87, "chunks": ["Stammering may be considered to be", "in large part, something", "people do when they become", "unusually tense about the", "way they talk."]}, {"n": 88, "chunks": ["When the speaker is unable to", "cope up with excessive muscular tension", "in the speech mechanism,", "stammering will result."]}, {"n": 89, "chunks": ["Try to forget if you", "faulter very badly sometimes.", "It will be harmful to", "think about your problem", "rather than the problem itself.", "Put your sincere efforts to eradicate it."]}, {"n": 90, "chunks": ["Stammering is a tough opponent.", "It never gives up easily.", "You have to keep knocking it", "out to stay in command of", "your speech and life."]}, {"n": 91, "chunks": ["You should learn by experience", "that you can change your", "emotional reactions by the way you talk."]}, {"n": 92, "chunks": ["Confidence is the strength of fluent speaking.", "Fear nervousness and excitement", "is the root cause of stammering."]}, {"n": 93, "chunks": ["Old habits do die hard certainly", "with dedicated and consistent practice", "in the right direction."]}, {"n": 94, "chunks": ["You feel better in the", "short run with avoidance but", "in the long run you feel worse."]}, {"n": 95, "chunks": ["If you become less sensitive", "about your difficulty,", "may be you will have no trouble."]}, {"n": 96, "chunks": ["Always feel the relaxed easy", "movement of all the speech organs."]}, {"n": 97, "chunks": ["While speaking slowly you can", "intelligently take time", "to think and speak.", "Thus you can avoid fumbling", "and incoherent ideas in your speech."]}, {"n": 98, "chunks": ["Talk firmly with your voice", "smooth and spontaneously flowing from the", "throat with light movements of", "your tongue lips and jaws."]}, {"n": 99, "chunks": ["Fear or anxiety may prevent you", "from entering situations and experiences", "that you would otherwise enjoy.", "This may cause more embarrassment and", "bring frustration leading to stammering."]}, {"n": 100, "chunks": ["An expert expressed,", "‘If you can’t afford", "to stammer you will.", "So your problem is usually", "in proportion to the amount", "of fear you have.’"]}, {"n": 101, "chunks": ["Free your tensed muscles and", "keep them in a", "state of constant relaxation."]}, {"n": 102, "chunks": ["Take your own time to talk.", "It relieves the time-pressure which", "most of the time you face."]}, {"n": 103, "chunks": ["Come out from the", "suppressed shelled condition,", "flush off all the debris", "from your mind.", "Remember possibility exists", "every morning of your life."]}, {"n": 104, "chunks": ["If you think you lack willpower,", "surely you are underestimating yourself.", "First try to understand the", "existence of will power", "within you and then", "discover more of it in you."]}, {"n": 105, "chunks": ["Be cool, confident and", "try to be in control of", "the situation and your temper."]}, {"n": 106, "chunks": ["Stick to your own convictions", "no matter what people say", "and rest assured, the world", "will be at your feet."]}, {"n": 107, "chunks": ["Try, try and try again", "and keep trying till you win.", "Definitely you will win till", "you are trying for it", "and never give up."]}, {"n": 108, "chunks": ["You can begin your life", "afresh everyday whatever", "may be your past life."]}, {"n": 109, "chunks": ["One of the fundamental principles", "hold that the more calm", "and relaxed you are", "the less stammering you face.", "That is one of the reasons", "why you should talk in a", "smooth, slow easy and deliberate manner,", "as it will help you to induce", "calmness in your speech."]}, {"n": 110, "chunks": ["Most of the eminent", "personalities speak slowly.", "Think that your slow speaking style", "is a quality style and", "others who speak fast", "is a quantitative one."]}, {"n": 111, "chunks": ["When you are determined to", "find some solution to your problems,", "you may possibly meet some obstacles.", "But if you are firm", "and bold, definitely you will", "find solutions to your problems."]}, {"n": 112, "chunks": ["Stammering is not a symptom", "but a behavior which", "can be easily modified.", "You can control your difficulty", "partly by modifying your feelings", "and attitude towards stammering and", "partly by eliminating and correcting", "the irregular behavior in your speech."]}, {"n": 113, "chunks": ["To minimize your problem it is", "better to make a practice", "not to avoid, postpone or substitute."]}, {"n": 114, "chunks": ["Review your improvement in speech", "periodically and see that", "it is firm and steady.", "Identify your mistakes and", "try to overcome them.", "Do not try to count", "the number of faultered words."]}, {"n": 115, "chunks": ["If you sincerely believe that", "you can overcome your problem,", "then definitely you can overcome", "your problem quite comfortably."]}, {"n": 116, "chunks": ["Reduce your fear of difficulty", "by disciplining yourself to face", "your fears and become less sensitive", "about your stammering and", "it will include", "analyzing your stammering behavior", "eliminating unnecessary or abnormal things", "you may be doing and taking", "positive action to control your blocks."]}, {"n": 117, "chunks": ["If anybody behaves badly with you", "do not be depressed rather think that", "the person does not know", "how to behave properly.", "It is his problem not yours."]}, {"n": 118, "chunks": ["When you are open-minded", "and courageous then you can definitely", "expect solid fluency in your speech."]}, {"n": 119, "chunks": ["Try to speak more and more.", "When you get any opportunity", "to speak with any person", "immediately seize it.", "If not available do your best", "to create the opportunity to speak."]}, {"n": 120, "chunks": ["Do all the practices sincerely", "and religiously till the slow", "relaxed speaking habit becomes", "a second nature to you."]}, {"n": 121, "chunks": ["You must develop a winning skill", ",a habit strong enough to", "compete successfully against the innate tendency", "to lock the vocal cords.", "The habit must be made automatic", "and must look and sound natural."]}, {"n": 122, "chunks": ["More and more practice will improve", "your speech system much faster and", "help to regain excellent confidence level."]}, {"n": 123, "chunks": ["Missing the practice at a stretch", "may deteriorate your fluent speaking ability", "and you may lose confidence", "and thereby fall into the", "vicious cycle of stammering again.", "So do not miss the practice", "even for a day."]}, {"n": 124, "chunks": ["Think of yourself as a successful and", "complete person with no negative ideas."]}, {"n": 125, "chunks": ["Do not waste time worrying", "about difficulties in the future.", "It may so happen that", "they may not come at all."]}, {"n": 126, "chunks": ["If you always think negatively,", "this is real psychological cancer", "which starts out in one spot", "and spreads easily all over."]}, {"n": 127, "chunks": ["Getting set to speak should", "be the same as getting", "set to run a marathon.", "The marathon runner does not", "need high acceleration of a sprinter,", "instead he requires steady speed."]}, {"n": 128, "chunks": ["While speaking to a person", "who speaks very fast it may", "happen that you too may", "go fast, competing with him.", "It invites more problem.", "Let him speak in his speaking style", "but you continue speaking in", "your slow speaking style."]}, {"n": 129, "chunks": ["After you cross the hurdle", "of nervousness you will enjoy", "interacting with all types of people", "and enjoy speaking very much", "just as a personenjoys", "swimming after he overcomes", "the fear of drowning."]}, {"n": 130, "chunks": ["You must enjoy speaking and", "consider it to be very pleasurable", "once you acquire fluency."]}, {"n": 131, "chunks": ["By refusing to quit whatever", "the situation you develop a", "quality of becoming unstoppable,", "one of the greatest", "qualities of human being."]}, {"n": 132, "chunks": ["Diligent practice and consistent effort", "with full faith in yourself", "will make your best dream", "of becoming a fluent speaker."]}, {"n": 133, "chunks": ["Remember “Negative thoughts", "are like a bouncer.", "Duck it! It will harmlessly", "pass over your mind.”"]}], "selfDirectionIntro": ["Everything begins in mind.", "The science of Self-Direction is the", "art of directing the subconscious mind", "into channels of right use.", "The Law of Self-Direction is", ": Every thought that one consciously thinks", "makes an impression on the", "sub-conscious mind that will express itself", "as action according to the strength", "and the desire contained", "within the thought.", "That which a person believes", "about himself, that which he", "confidently expects and anticipates,", "will become his experience.", "Self-Direction is the art of", "redirecting the subconscious mind in a", "positive way, knowing that mind will", "follow through and carry out", "our positive directions.", "Carry out this practice any time", "but the most preferred and effective time", "is after dinner before sleeping."], "selfDirectionAffirmation": ["“This is the turning", "point in my life.", "I am erasing the past.", "The future is mine to choose.", "Right this moment I am", "making my tomorrow.", "I forgive myself for all past mistakes.", "I start over with a clean slate.", "I choose for myself only that", "which I desire to experience", ".I realize that I have the", "right to choose my own thoughts.", "I am not bound by anyone", "else’s opinion of me.", "No one does my thinking", "for me unless I let them.", "I am choosing for myself", "thoughts of health, happiness,", "prosperity, love and understanding.", "Fear and hate have no", "place in my thinking.", "From this moment on I am", "taking dominion of my life.", "I cease fearing failure.", "I now live for the", "sheer joy of living.", "I rely on and trust", "the creative power within me.", "I trust God, not only", "within me, but within everyone.", "No one can reject me because", "I am one with all of life.", "I accept life joyfully and lovingly.", "I am accepted by life right now.", "The spirit within me sustains", "me at all times,", "giving me a feeling", "of serenity and assurance.", "Wherever I am, whatever I am doing,", "the Infinite presence is there", "living through me in it’s perfect way.", "I am prosperous.", "I never entertain thoughts", "of poverty or lack.", "I have no regrets for the past,", "no fear for this moment", "nor any anxiety for the future.", "I am protected by an infinite power.", "I am guided by Divine Intelligence", "and I am sustained", "by a loving presence.", "I direct the subconscious mind", "to do the thing at hand", "with ease and with certainty.", "I am not bound by the past", "nor limited by the future.", "I live now in the present.", "I am a decisive person.", "Through the wisdom within me", "I am able to make wise choices.", "The intelligence within me knows", "what is right for me and", "guides me in making these choices.", "My subconscious mind is one", "with the Universal mind and thus", "I am assured that all of", "life is working with me.", "In the Universal mind there is a", "perfect plan for me and", "it is revealed to me as", "I open my mind to receive it.", "I am making my future", "by good thinking right now.", "I live in the present.", "I trust in the future.", "I believe that all of life", "is working for my good.", "I am undisturbed, I am at peace.", "I am not afraid,", "I am living in the present.", "I trust the future will supply", "me with all that I need.", "I will meet each day", "as it comes,", "knowing God is there.", "There is nothing to fear.", "I live in a mental world", "in which I have been given dominion.", "Right within me is the power", "which is able to meet", "any situation I shall ever encounter.", "All that I need is", "within me right now.", "I refuse to become discouraged.", "Right within me is the", "wisdom to meet every situation.", "I am led, guided and", "directed to make right choices.", "The perfect power within me knows", "what to do and how to do it.", "Right within me is the power", "to which nothing is impossible.", "I trust the perfect power", "within me in all that I do.", "I am profoundly undisturbed.", "I believe in the power", "of good in my life.", "There is no person, place, thing,", "condition or circumstances that can interfere", "with the power of good", "within me right now.", "I feel nothing done against me,", "nothing can disturb me.", "Nothing in my past life", "has any power to hurt me.", "Nothing is against me.", "All of life is for me.", "Every problem has an answer,", "an answer within me right now.", "Whatever my difficulty I will find", "the blessing in it and", "emerge a better, stronger person.", "Nothing defeats me because I know", "nothing defeats the power within me.", "Calling upon the intelligence within me,", "I rechart my course for", "a more productive life.", "I trust my subconscious mind to remember.", "I release that which seems", "to elude me and trust my", "subconscious mind to give me", "the answer I seek.", "I am completely, perfectly", "and wholly relaxed.", "I am letting go right now", "of every muscle, every nerve,", "every bone, every tissue in my body.", "I rest in the knowledge that", "there is within me an intelligence", "which knows how to make", "my body function perfectly.", "I let the intelligence within me", "tell me what to do", "and how to do it.", "I move easily through life,", "doing the right thing", "at exactly the right time.", "I am free from any irritation.", "I am in perfect harmony with life.", "Nothing irritates me.", "No person annoys me.", "I do not condemn myself.", "I have no anxiety for the future.", "I surrender my every action,", "my every demand, my every fear,", "worry, anxiety and burden", "to the perfect power within me.", "I am completely relaxed.", "I move forward calmly and confidently", "into paths of right action.", "ALL IS WELL AND I AM THANKFUL.”"]};
+const DATA = {"vocal": [{"name": "Vocal Exercise I", "lessons": [["APPLE", "ABSENT", "ACTION", "ADD", "ADDRESS", "ADMIT", "ALBUM", "AFRICA", "AND", "ANIMAL", "APPLY", "ARREST", "ASH", "ATLAS", "ATTEND"], ["ARM", "AFTER", "ARMY", "ARTICLE", "ARCH", "AUNT", "AUNTY", "EARTH", "ICE", "IRON", "ITEM", "OUR", "OUT"], ["EAT", "EATEN", "ENGLISH", "EVEN", "EACH", "ELEVEN", "IF", "IN", "ILL", "INCH", "INSIDE", "INDIA", "INDOOR", "INCOME", "INITIAL"], ["OBEY", "OLD", "OLDER", "OPEN", "ORAL", "OVAL", "OVER", "OWN", "OVERALL", "OASIS", "OKAY"], ["ORANGE", "OBJECT", "ODD", "OFFER", "OFFICER", "OFTEN", "OMIT", "ON", "OR", "ORBIT", "ORDER", "OX", "OMELETTE"], ["ELEPHANT", "AGE", "AIM", "AIRY", "ANY", "ANYONE", "ASIA", "EGG", "EIGHT", "EIGHTEEN", "ELDER", "ENTER", "END"]]}, {"name": "Vocal Exercise II", "lessons": [["EARN", "EARNEST", "EARTH", "EARLY", "ARBITRATION", "ARCHITECT", "ARTICLE", "ARTIST", "ARMAMENT", "OTHER", "OUTPUT", "OUTCOME", "OUTSTANDING", "ULTIMATUM", "UMBRELLA", "UNBEARABLE", "UNCOMFORTABLE"], ["EFFICIENT", "ELDERLY", "EMPLOYEE", "ENGAGEMENT", "ENVELOPE", "EVERLASTING", "EXPERIMENT", "EXCELLENCE", "EXECUTIVE", "EXCHANGE", "EMBASSY", "ENTERTAINMENT"], ["ELECTRIC", "EQUATION", "EVENING", "EVENTUAL", "IMMEDIATE", "IMPROVEMENT", "INCIDENTAL", "INTELLIGENCE", "INTERNATIONAL", "INDIVIDUAL", "INDIAN"], ["ABANDON", "ABIDE", "ABSENT", "ABSOLUTE", "ABOLISH", "ACTION", "ABSTINENCE", "ACCOMMODATION", "ACTIVE", "ANNUAL", "ANNIVERSARY"], ["ALMIGHTY", "ALTERNATE", "ALTITUDE", "ALTOGETHER", "ALWAYS", "AUDIENCE", "AUTOGRAPHY", "AUTOMATIC", "AUXILIARY"], ["OBEDIENCE", "OBEY", "OLD", "ORIENTATION", "OMEGA", "OVERALL", "OVERFLOW", "OVERTIME", "OVERSEAS", "OVERTAKE"], ["UNIFORM", "UNIFORMITY", "UNILATERAL", "UNION", "UNITY", "UNITARY", "UNIVERSAL", "UNIVERSITY"]]}, {"name": "Vocal Exercise III", "lessons": [["ABOVE", "ABOUT", "AVOID", "ACCOUNT", "ADMIRE", "ALLOW", "ALLOY", "ACCRUE", "APPEAL", "AQUARIUM", "ARITHMETIC", "ASSEMBLY", "ATTEMPT"], ["ABACK", "ABANDON", "ABBREVIATION", "ABHOR", "ABDUCTION", "ABOARD", "ABODE", "ABORT", "ABRIDGE", "ABRASION"], ["ACCENT", "ALPHABET", "ANALYSE", "ANATOMY", "ANGLE", "ARROW", "AVERAGE", "ABDOMEN", "ADIEU", "ABERRATION", "ABJECT", "ABSOLUTE", "ABSCESS", "ABSTAIN", "ABSORB", "ABSENCE", "ABNORMAL"], ["EDITION", "EDUCATION", "ELEMENT", "EMBLEM", "EMERALD", "EMPIRE", "ENCROACH", "ESCORT", "ESTATE", "EXCUSE", "EXERCISE", "EXHIBITION", "ECCENTRIC", "ECLECTIC", "ECSTATIC", "EXOTIC", "EXTERIOR", "EXHILARATION", "APRIL", "ANCIENT"], ["ECONOMY", "EUROPEAN", "IMAGINE", "IMMORTAL", "IMITATE", "IMPERIAL", "IMPORTANT", "INDEPENDENCE", "INFANTRY", "INHERIT", "INJURY", "INSTITUTION", "INSTRUCTION", "INTERIOR", "INVOLVE", "INWARD", "EAVESDROP", "EQUILIBRIUM", "EARMARK", "USAGE", "UTILITY"], ["OCEANOGRAPHY", "OZONE", "ORIFICE", "ODOURISER", "OMNIPOTENT", "OMNIPRESENT", "OVERALL", "OVERT"], ["ORCHID", "OCTAGON", "OPERATOR", "OBVIOUS", "OPHTHALMIC", "ORGANIC", "ORNAMENT", "OYSTER", "OPTIMUM", "ORCHESTRA", "OTTOMAN", "AUGUST"], ["ULNA", "ULTIMA", "ULTRA", "UNDER", "UNPACK", "UNDERSTAND", "UPLIFT", "UPHILL", "UNDERTAKE", "UPDATE", "UPHOLD", "UPROOT", "URBAN", "UTMOST", "UMPTEEN", "UNFORGETTABLE"], ["ISOLATE", "INDEMNIFY", "IDENTITY", "EYESIGHT", "EYEOPENER", "ITEMISE", "IVORY", "IDENTIFY", "OUNCE", "OURSELF", "EYEGLASS", "IVY"]]}], "instructions": [{"n": 1, "chunks": ["The first thing you must do", "is to admit to yourself that", "you need to change and", "that you really want to do", "something about your speech."]}, {"n": 2, "chunks": ["During the initial period", "of the course always use", "smaller sentences while speaking."]}, {"n": 3, "chunks": ["Always think before speaking", ". Arrange the words you want", "to speak in your mind", "and then talk slowly", "without any rush or panic."]}, {"n": 4, "chunks": ["Try to maintain normal eye contact", "with the person you are talking to.", "It helps you to build", "your self confidence and", "magnifies the personal impact."]}, {"n": 5, "chunks": ["You have the ability to", "communicate normally but the fear", "or anticipation of fear generates", "unnecessary tension into your", "speech mechanism and disfluency starts."]}, {"n": 6, "chunks": ["If you can become desensitized", "and learn that you do not", "have to panic when stammering", "is anticipated or experienced", "progress will come more swiftly."]}, {"n": 7, "chunks": ["Take a positive attitude", "and always tell yourself", "“Yes I can talk fluently”."]}, {"n": 8, "chunks": ["As soon as you", "start speaking little better", "you will build up a positive attitude", "to drive out all the", "unpleasant feelings about speaking."]}, {"n": 9, "chunks": ["If you sometimes faulter,", "try to forget it immediately", "so that it will not", "penetrate your mind."]}, {"n": 10, "chunks": ["Distract your mind from", "thoughts of fear so that", "you can interact with people easily."]}, {"n": 11, "chunks": ["Resist all sorts of tension, panic,", "urgency and pressure while talking."]}, {"n": 12, "chunks": ["Try to stop exerting force", "to produce proper speech desperately", "definitely you will be able to", "speak with no or little problem."]}, {"n": 13, "chunks": ["Always keep cool calm and quiet", "even if you do not speak", "so that the calmness enters your system."]}, {"n": 14, "chunks": ["Do not go into controversial or", "exciting discussions with friends, relatives and", "family members for some period", "of time till you attain", "complete control over your speech."]}, {"n": 15, "chunks": ["Sometimes practice walking fast", "and talking slow.", "It will help you to", "control your speed of speech", "while talking to a fast speaking person."]}, {"n": 16, "chunks": ["You may frequently feel the need", "to speak very fast", "while you anticipate stammering.", "But instead if you can speak slowly", "you can reduce tension and anxiety", "as well as other problems of speech."]}, {"n": 17, "chunks": ["Keep yourself relaxed and breathe deeply.", "Regard the tendency to be nervous", "as nature’s way of preparing", "you to be mentally strong."]}, {"n": 18, "chunks": ["Cultivate the habit of speaking directly.", "Avoid communication in a", "round about manner.", "Be direct and firm."]}, {"n": 19, "chunks": ["Your stammering is the result", "of something you do,", "not something that happens to you.", "It is a behavior, not a condition", ". The mistakes you make can be", "corrected with a", "little effort and courage."]}, {"n": 20, "chunks": ["You need not surrender helplessly", "to your speech difficulty because", "you can change the way of", "speaking to a correct one and", "learn to communicate with ease."]}, {"n": 21, "chunks": ["Your fundamental task is to alter", "your speech behavior and to", "bring about positive changes", "in your self perception and feelings."]}, {"n": 22, "chunks": ["Try to develop a “Killers Instinct”", "within yourself to", "fight against stammering."]}, {"n": 23, "chunks": ["To be successful concentrate more", "on your strength and future possibilities", "rather than your weakness and past failures."]}, {"n": 24, "chunks": ["No matter what the situation,", "gain courage instantly,", "go ahead smartly and speak."]}, {"n": 25, "chunks": ["Never try to compete regarding speed.", "Do not follow others as you", "have your own style of speaking."]}, {"n": 26, "chunks": ["Keep in mind that your", "slow and relaxed speaking style", "is unique excellent and", "praised by quality people.", "Most of the learned and", "quality speakers speak slowly softly", "and in a relaxed manner."]}, {"n": 27, "chunks": ["Do not permit other people’s impatience", "or hurry to disturb you.", "If you continue to", "speak in slow manner,", "you may be surprised that others", "will also talk slowly to you."]}, {"n": 28, "chunks": ["Do not feel that everybody is", "looking at you or be over-conscious", "that everybody is observing", "your faltered speech.", "Do not be harsh on yourself."]}, {"n": 29, "chunks": ["Being over-conscious of your", "speech problem may hamper its", "natural fluency and result in", "increased tension and anxiety."]}, {"n": 30, "chunks": ["While speaking feared words, if any,", "try to keep yourself", "calm and relaxed."]}, {"n": 31, "chunks": ["Practice sincerely consistently and patiently.", "You are sure to", "get over a life time hurdle."]}, {"n": 32, "chunks": ["Your commitment must be total.", "Not even a small", "part of you must hold back.", "Don’t dwell longingly on your", "fluency in the magical belief that", "some day your speech blocks", "will disappear on its own."]}, {"n": 33, "chunks": ["Always remember if you speak well,", "you will regain your confidence", "and on the contrary,", "your confidence will be down", "in case of more problem."]}, {"n": 34, "chunks": ["After analyzing in which particular", "speech organ the most tension is mounting,", "it is easy to work on", "your speech by relaxing those muscles."]}, {"n": 35, "chunks": ["When you find some improvement", "within a few days,", "continue the practices", "more spiritedly with enthusiasm."]}, {"n": 36, "chunks": ["You have no physical disability,", "so nothing can stop you", "from speaking normally."]}, {"n": 37, "chunks": ["You tend to consider your", "difficulties of speech to be unique,", "it is because you spend", "too much time thinking about them.", "It is like other common", "problems of human beings."]}, {"n": 38, "chunks": ["Always feel your speech organs", "whether they are relaxed", "loose and smooth."]}, {"n": 39, "chunks": ["As soon as a question is asked,", "listen carefully, understand it quickly", "and reply naturally slowly", "choosing the correct words."]}, {"n": 40, "chunks": ["Sometimes you tend to apply", "lot of force while speaking.", "Speech is a very sensitive matter.", "Always try to make", "your speech effortless."]}, {"n": 41, "chunks": ["Reducing the speed of speaking is", "very effective to combat your problems.", "Increase your speed gradually as you", "become more accustomed to fluent speaking."]}, {"n": 42, "chunks": ["When you solve one problem,", "you will gain confidence", "and be self-sufficient.", "Be more trustful of yourself", "that you are capable of", "solving more bigger problems."]}, {"n": 43, "chunks": ["A sincere compliment about your", "improvement in speech is one", "of the most effective", "ways to motivate yourself."]}, {"n": 44, "chunks": ["If some problem comes", "do not worry – take it sportingly,", "keep in mind that it will", "vanish within a short time", "and continue to practice hard."]}, {"n": 45, "chunks": ["Remember that the more", "you avoid stammering", "more is the fear of stammering.", "The more you are afraid,", "more problem will come.", "So you will be caught", "in a vicious cycle."]}, {"n": 46, "chunks": ["Firmly tell yourself", "‘I can change and eliminate", "the bad habit whenever I choose.’"]}, {"n": 47, "chunks": ["The harder you are on yourself,", "the easier will be your life,", "the easier you are on yourself,", "more hard will be your life."]}, {"n": 48, "chunks": ["Always be hopeful for the", "next moment to be positive and bright."]}, {"n": 49, "chunks": ["Stammering is something you are doing", "unconsciously and you can learn to", "change what you are doing consciously."]}, {"n": 50, "chunks": ["If you stammer slightly,", "it would not hamper your speech,", "but if you think depressing thoughts", "and negative thoughts about stammering,", "it would deteriorate your speech more."]}, {"n": 51, "chunks": ["Remove all negative words like", "“failure” “problem” “incapable” “defeat” “pessimism”", "“trouble” “pain” “suffering” from", "your mind and thoughts."]}, {"n": 52, "chunks": ["In future always expect good things", "– success good health, achievement and prosperity.", "Replace despair by hope and", "announce a war on negative thinking."]}, {"n": 53, "chunks": ["Think that so many people", "have lifelong defects and", "have to suffer throughout.", "Your problem is easily curable", "and you are in a better position."]}, {"n": 54, "chunks": ["Always try to make", "life feel good.", "So never feel bad,", "about your life particularly with", "regard to your speech."]}, {"n": 55, "chunks": ["If your speech is improving slowly", "do not feel afraid,", "worry may come if", "improvement is at a standstill."]}, {"n": 56, "chunks": ["Your thinking makes all the difference.", "If you think that", "you are fluent,", "you can speak easily.", "If you think that you can’t", "speak properly then definitely", "speech blocks will come."]}, {"n": 57, "chunks": ["Those having speech problem,", "use tricks to avoid them.", "Try not to use such tricks.", "Talk in a direct manner", "otherwise you may feel a desperate need", "to use those tricks frequently and", "may become dependant on them."]}, {"n": 58, "chunks": ["Avoidance can be defined as", "a process of shying away from the", "responsibility of facing your problem.", "Actually what happens is that", "the more you cover up", "and try to avoid", "the more you will stammer."]}, {"n": 59, "chunks": ["You should develop a conscience", "which itself will penalize", "the tendency to avoid."]}, {"n": 60, "chunks": ["Identify and eliminate any unusual gestures,", "facial distortions or body movements", "which possibly you may exhibit", "when stammer or trying to", "avoid the speech difficulties."]}, {"n": 61, "chunks": ["Remember that speech sounds better", "in short phrases with", "regular pauses at correct places."]}, {"n": 62, "chunks": ["Stammering itself is not a problem", "but to think about it", "always is a problem."]}, {"n": 63, "chunks": ["Do not avoid certain words or", "situations that trigger stammering.", "Face them head-on.", "It is far better to", "face the situation and stammer", "than to avoid speaking because", "the fear of stammering mounts", "and compounds the problem."]}, {"n": 64, "chunks": ["Panic, tension and overwhelming urgency", "are the hallmark of stammering.", "They are what you need to overcome."]}, {"n": 65, "chunks": ["Never quit under any circumstances,", "from your ultimate target of", "becoming a confident and fluent speaker."]}, {"n": 66, "chunks": ["Anyone can succeed if", "he is enthusiastic about life,", "even when life seems to be empty.", "Doors of opportunity open", "to the enthusiastic first."]}, {"n": 67, "chunks": ["Control your internal dialogue.", "Talk to yourself", "always in a positive manner."]}, {"n": 68, "chunks": ["If you have the goal of", "becoming a fluent speaker and", "positively day by day", "week by week and work very hard", "sincerely and dedicatedly towards it", "definitely you will achieve success."]}, {"n": 69, "chunks": ["More and more dedicated effort", "means lesser time to", "overcome your speech difficulties."]}, {"n": 70, "chunks": ["Progress towards your target", "is never going to be", "a straight smooth line.", "Sometimes it will go up", "and at times down.", "Don’t worry when it is down.", "Look at it as an assurance", "that down soon follows the up."]}, {"n": 71, "chunks": ["Look at your shortcomings", "and faults and believe that", "you can improve yourself."]}, {"n": 72, "chunks": ["Choose to be with people", "who make you happy", "rather than with people", "who let you down", "and always discourage you."]}, {"n": 73, "chunks": ["When you are full of energy", "and hope you see doors and", "windows of opportunities all around you."]}, {"n": 74, "chunks": ["If you pretend to be a fluent speaker", "it will not help you.", "Instead if stammering comes", "let it come openly.", "It will reduce your feeling of shame", "and guilt and slowly you", "will be more and more", "free to talk properly."]}, {"n": 75, "chunks": ["When you utter feared words", "easily and handle feared situations comfortably", "you have made an achievement."]}, {"n": 76, "chunks": ["Take care not to build up", "air pressure behind your lips", "or tongue pressing tightly", "against your gum or palate."]}, {"n": 77, "chunks": ["Concentrate in controlling the lip muscles", "so that they just touch and", "air is able to flow between them."]}, {"n": 78, "chunks": ["Always speak in a slow relaxed style", "and take utmost care so that", "the fear and the bad habit", "does not come back and", "you maintain a relaxed speech pattern.", "In this manner you will be", "moving slowly and gently to the", "desired goal of a fluent speaker."]}, {"n": 79, "chunks": ["Try to arrest the growth of", "fear and anxiety which are the two", "main negative pillars of normal speech."]}, {"n": 80, "chunks": ["It will take some time and", "effort to change anything for a", "life time and it includes", "your problem also."]}, {"n": 81, "chunks": ["The goal you desire to reach", "can be reached much faster", "if you are happy and pleasant."]}, {"n": 82, "chunks": ["Stammering is your problem.", "The expert can tell you", "what to do and how to", "do it, but you are the one", "who has to do it.", "You are the only person", "onearth who can", "correct your problem."]}, {"n": 83, "chunks": ["Now that you are trying", "sincerely to get rid of stammering", "it is an ideal indication that", "you will regain your fluency", "within a short time."]}, {"n": 84, "chunks": ["Your defective style of speaking", "has to be replaced by a", "correct way of speaking.", "To achieve this you must be", "committed to yourself whole heartedly with", "single-minded concentration and devotion."]}, {"n": 85, "chunks": ["If you hide your problem", "you cannot reduce your fear", "at the same time.", "Rather allow little stammering,", "get the fluency and", "increase your confidence."]}, {"n": 86, "chunks": ["Your fear may be of certain words,", "sounds, some persons, certain situations,", "telephone call, saying your name etc.", "When you have little fear,", "you have less tension and", "probably will not have as much", "difficulty in expressing yourselves adequately."]}, {"n": 87, "chunks": ["Stammering may be considered to be", "in large part, something", "people do when they become", "unusually tense about the", "way they talk."]}, {"n": 88, "chunks": ["When the speaker is unable to", "cope up with excessive muscular tension", "in the speech mechanism,", "stammering will result."]}, {"n": 89, "chunks": ["Try to forget if you", "faulter very badly sometimes.", "It will be harmful to", "think about your problem", "rather than the problem itself.", "Put your sincere efforts to eradicate it."]}, {"n": 90, "chunks": ["Stammering is a tough opponent.", "It never gives up easily.", "You have to keep knocking it", "out to stay in command of", "your speech and life."]}, {"n": 91, "chunks": ["You should learn by experience", "that you can change your", "emotional reactions by the way you talk."]}, {"n": 92, "chunks": ["Confidence is the strength of fluent speaking.", "Fear nervousness and excitement", "is the root cause of stammering."]}, {"n": 93, "chunks": ["Old habits do die hard certainly", "with dedicated and consistent practice", "in the right direction."]}, {"n": 94, "chunks": ["You feel better in the", "short run with avoidance but", "in the long run you feel worse."]}, {"n": 95, "chunks": ["If you become less sensitive", "about your difficulty,", "may be you will have no trouble."]}, {"n": 96, "chunks": ["Always feel the relaxed easy", "movement of all the speech organs."]}, {"n": 97, "chunks": ["While speaking slowly you can", "intelligently take time", "to think and speak.", "Thus you can avoid fumbling", "and incoherent ideas in your speech."]}, {"n": 98, "chunks": ["Talk firmly with your voice", "smooth and spontaneously flowing from the", "throat with light movements of", "your tongue lips and jaws."]}, {"n": 99, "chunks": ["Fear or anxiety may prevent you", "from entering situations and experiences", "that you would otherwise enjoy.", "This may cause more embarrassment and", "bring frustration leading to stammering."]}, {"n": 100, "chunks": ["An expert expressed,", "‘If you can’t afford", "to stammer you will.", "So your problem is usually", "in proportion to the amount", "of fear you have.’"]}, {"n": 101, "chunks": ["Free your tensed muscles and", "keep them in a", "state of constant relaxation."]}, {"n": 102, "chunks": ["Take your own time to talk.", "It relieves the time-pressure which", "most of the time you face."]}, {"n": 103, "chunks": ["Come out from the", "suppressed shelled condition,", "flush off all the debris", "from your mind.", "Remember possibility exists", "every morning of your life."]}, {"n": 104, "chunks": ["If you think you lack willpower,", "surely you are underestimating yourself.", "First try to understand the", "existence of will power", "within you and then", "discover more of it in you."]}, {"n": 105, "chunks": ["Be cool, confident and", "try to be in control of", "the situation and your temper."]}, {"n": 106, "chunks": ["Stick to your own convictions", "no matter what people say", "and rest assured, the world", "will be at your feet."]}, {"n": 107, "chunks": ["Try, try and try again", "and keep trying till you win.", "Definitely you will win till", "you are trying for it", "and never give up."]}, {"n": 108, "chunks": ["You can begin your life", "afresh everyday whatever", "may be your past life."]}, {"n": 109, "chunks": ["One of the fundamental principles", "hold that the more calm", "and relaxed you are", "the less stammering you face.", "That is one of the reasons", "why you should talk in a", "smooth, slow easy and deliberate manner,", "as it will help you to induce", "calmness in your speech."]}, {"n": 110, "chunks": ["Most of the eminent", "personalities speak slowly.", "Think that your slow speaking style", "is a quality style and", "others who speak fast", "is a quantitative one."]}, {"n": 111, "chunks": ["When you are determined to", "find some solution to your problems,", "you may possibly meet some obstacles.", "But if you are firm", "and bold, definitely you will", "find solutions to your problems."]}, {"n": 112, "chunks": ["Stammering is not a symptom", "but a behavior which", "can be easily modified.", "You can control your difficulty", "partly by modifying your feelings", "and attitude towards stammering and", "partly by eliminating and correcting", "the irregular behavior in your speech."]}, {"n": 113, "chunks": ["To minimize your problem it is", "better to make a practice", "not to avoid, postpone or substitute."]}, {"n": 114, "chunks": ["Review your improvement in speech", "periodically and see that", "it is firm and steady.", "Identify your mistakes and", "try to overcome them.", "Do not try to count", "the number of faultered words."]}, {"n": 115, "chunks": ["If you sincerely believe that", "you can overcome your problem,", "then definitely you can overcome", "your problem quite comfortably."]}, {"n": 116, "chunks": ["Reduce your fear of difficulty", "by disciplining yourself to face", "your fears and become less sensitive", "about your stammering and", "it will include", "analyzing your stammering behavior", "eliminating unnecessary or abnormal things", "you may be doing and taking", "positive action to control your blocks."]}, {"n": 117, "chunks": ["If anybody behaves badly with you", "do not be depressed rather think that", "the person does not know", "how to behave properly.", "It is his problem not yours."]}, {"n": 118, "chunks": ["When you are open-minded", "and courageous then you can definitely", "expect solid fluency in your speech."]}, {"n": 119, "chunks": ["Try to speak more and more.", "When you get any opportunity", "to speak with any person", "immediately seize it.", "If not available do your best", "to create the opportunity to speak."]}, {"n": 120, "chunks": ["Do all the practices sincerely", "and religiously till the slow", "relaxed speaking habit becomes", "a second nature to you."]}, {"n": 121, "chunks": ["You must develop a winning skill", ",a habit strong enough to", "compete successfully against the innate tendency", "to lock the vocal cords.", "The habit must be made automatic", "and must look and sound natural."]}, {"n": 122, "chunks": ["More and more practice will improve", "your speech system much faster and", "help to regain excellent confidence level."]}, {"n": 123, "chunks": ["Missing the practice at a stretch", "may deteriorate your fluent speaking ability", "and you may lose confidence", "and thereby fall into the", "vicious cycle of stammering again.", "So do not miss the practice", "even for a day."]}, {"n": 124, "chunks": ["Think of yourself as a successful and", "complete person with no negative ideas."]}, {"n": 125, "chunks": ["Do not waste time worrying", "about difficulties in the future.", "It may so happen that", "they may not come at all."]}, {"n": 126, "chunks": ["If you always think negatively,", "this is real psychological cancer", "which starts out in one spot", "and spreads easily all over."]}, {"n": 127, "chunks": ["Getting set to speak should", "be the same as getting", "set to run a marathon.", "The marathon runner does not", "need high acceleration of a sprinter,", "instead he requires steady speed."]}, {"n": 128, "chunks": ["While speaking to a person", "who speaks very fast it may", "happen that you too may", "go fast, competing with him.", "It invites more problem.", "Let him speak in his speaking style", "but you continue speaking in", "your slow speaking style."]}, {"n": 129, "chunks": ["After you cross the hurdle", "of nervousness you will enjoy", "interacting with all types of people", "and enjoy speaking very much", "just as a personenjoys", "swimming after he overcomes", "the fear of drowning."]}, {"n": 130, "chunks": ["You must enjoy speaking and", "consider it to be very pleasurable", "once you acquire fluency."]}, {"n": 131, "chunks": ["By refusing to quit whatever", "the situation you develop a", "quality of becoming unstoppable,", "one of the greatest", "qualities of human being."]}, {"n": 132, "chunks": ["Diligent practice and consistent effort", "with full faith in yourself", "will make your best dream", "of becoming a fluent speaker."]}, {"n": 133, "chunks": ["Remember “Negative thoughts", "are like a bouncer.", "Duck it! It will harmlessly", "pass over your mind.”"]}], "selfDirectionIntro": ["Everything begins in mind.", "The science of Self-Direction is the", "art of directing the subconscious mind", "into channels of right use.", "The Law of Self-Direction is", ": Every thought that one consciously thinks", "makes an impression on the", "sub-conscious mind that will express itself", "as action according to the strength", "and the desire contained", "within the thought.", "That which a person believes", "about himself, that which he", "confidently expects and anticipates,", "will become his experience.", "Self-Direction is the art of", "redirecting the subconscious mind in a", "positive way, knowing that mind will", "follow through and carry out", "our positive directions.", "Carry out this practice any time", "but the most preferred and effective time", "is after dinner before sleeping."], "selfDirectionAffirmation": ["“This is the turning", "point in my life.", "I am erasing the past.", "The future is mine to choose.", "Right this moment I am", "making my tomorrow.", "I forgive myself for all past mistakes.", "I start over with a clean slate.", "I choose for myself only that", "which I desire to experience", ".I realize that I have the", "right to choose my own thoughts.", "I am not bound by anyone", "else’s opinion of me.", "No one does my thinking", "for me unless I let them.", "I am choosing for myself", "thoughts of health, happiness,", "prosperity, love and understanding.", "Fear and hate have no", "place in my thinking.", "From this moment on I am", "taking dominion of my life.", "I cease fearing failure.", "I now live for the", "sheer joy of living.", "I rely on and trust", "the creative power within me.", "I trust God, not only", "within me, but within everyone.", "No one can reject me because", "I am one with all of life.", "I accept life joyfully and lovingly.", "I am accepted by life right now.", "The spirit within me sustains", "me at all times,", "giving me a feeling", "of serenity and assurance.", "Wherever I am, whatever I am doing,", "the Infinite presence is there", "living through me in it’s perfect way.", "I am prosperous.", "I never entertain thoughts", "of poverty or lack.", "I have no regrets for the past,", "no fear for this moment", "nor any anxiety for the future.", "I am protected by an infinite power.", "I am guided by Divine Intelligence", "and I am sustained", "by a loving presence.", "I direct the subconscious mind", "to do the thing at hand", "with ease and with certainty.", "I am not bound by the past", "nor limited by the future.", "I live now in the present.", "I am a decisive person.", "Through the wisdom within me", "I am able to make wise choices.", "The intelligence within me knows", "what is right for me and", "guides me in making these choices.", "My subconscious mind is one", "with the Universal mind and thus", "I am assured that all of", "life is working with me.", "In the Universal mind there is a", "perfect plan for me and", "it is revealed to me as", "I open my mind to receive it.", "I am making my future", "by good thinking right now.", "I live in the present.", "I trust in the future.", "I believe that all of life", "is working for my good.", "I am undisturbed, I am at peace.", "I am not afraid,", "I am living in the present.", "I trust the future will supply", "me with all that I need.", "I will meet each day", "as it comes,", "knowing God is there.", "There is nothing to fear.", "I live in a mental world", "in which I have been given dominion.", "Right within me is the power", "which is able to meet", "any situation I shall ever encounter.", "All that I need is", "within me right now.", "I refuse to become discouraged.", "Right within me is the", "wisdom to meet every situation.", "I am led, guided and", "directed to make right choices.", "The perfect power within me knows", "what to do and how to do it.", "Right within me is the power", "to which nothing is impossible.", "I trust the perfect power", "within me in all that I do.", "I am profoundly undisturbed.", "I believe in the power", "of good in my life.", "There is no person, place, thing,", "condition or circumstances that can interfere", "with the power of good", "within me right now.", "I feel nothing done against me,", "nothing can disturb me.", "Nothing in my past life", "has any power to hurt me.", "Nothing is against me.", "All of life is for me.", "Every problem has an answer,", "an answer within me right now.", "Whatever my difficulty I will find", "the blessing in it and", "emerge a better, stronger person.", "Nothing defeats me because I know", "nothing defeats the power within me.", "Calling upon the intelligence within me,", "I rechart my course for", "a more productive life.", "I trust my subconscious mind to remember.", "I release that which seems", "to elude me and trust my", "subconscious mind to give me", "the answer I seek.", "I am completely, perfectly", "and wholly relaxed.", "I am letting go right now", "of every muscle, every nerve,", "every bone, every tissue in my body.", "I rest in the knowledge that", "there is within me an intelligence", "which knows how to make", "my body function perfectly.", "I let the intelligence within me", "tell me what to do", "and how to do it.", "I move easily through life,", "doing the right thing", "at exactly the right time.", "I am free from any irritation.", "I am in perfect harmony with life.", "Nothing irritates me.", "No person annoys me.", "I do not condemn myself.", "I have no anxiety for the future.", "I surrender my every action,", "my every demand, my every fear,", "worry, anxiety and burden", "to the perfect power within me.", "I am completely relaxed.", "I move forward calmly and confidently", "into paths of right action.", "ALL IS WELL AND I AM THANKFUL.”"]};
 
 /* ---------------- storage ---------------- */
 const KEY = 'scc-practice-v1';
-let S = {theme:'dark', hold:5, inhale:3, rest:1.5, pace:0.7, breath:1.5,
+let S = {theme:'dark', hold:5, inhale:3, rest:1.5, pace:0.7, breath:1.5, part:0,
          vSound:false, rSound:false, lesson:0, source:0, unit:0, mode:'auto', day:'', tv:0, tr:0,
-         release:1.2, ttsMode:'off', ttsRate:0.85, voiceURI:'', sayWord:false, vbOpen:false, mirror:false, mirrorSize:30, ver:0};
+         release:1.2, ttsMode:'off', ttsRate:0.85, voiceURI:'', sayWord:false, vbOpen:false, mirror:false, mirrorSize:30, tb:0,
+         bCounts:8, bSpeed:0.6, bTarget:20, bSay:true, bSound:true, ver:0};
 try{ const raw = localStorage.getItem(KEY); if(raw) Object.assign(S, JSON.parse(raw)); }catch(e){}
 if(S.ver !== 2){ S.vSound = true; S.sayWord = true; S.ver = 2; }  /* guided-cue release */
 const today = new Date().toISOString().slice(0,10);
-if(S.day !== today){ S.day = today; S.tv = 0; S.tr = 0; }
+if(S.day !== today){ S.day = today; S.tv = 0; S.tr = 0; S.tb = 0; }
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
 const $ = id => document.getElementById(id);
 
@@ -498,7 +600,8 @@ applyTheme();
 $('themeBtn').onclick = () => { S.theme = (S.theme === 'dark' ? 'light' : 'dark'); applyTheme(); save(); };
 
 /* ---------------- tabs ---------------- */
-const TABS = [['tab-vocal','p-vocal'],['tab-read','p-read'],['tab-guide','p-guide']];
+const TABS = [['tab-vocal','p-vocal'],['tab-read','p-read'],
+              ['tab-breath','p-breath'],['tab-guide','p-guide']];
 let tab = 0;
 function setTab(i){
   tab = i;
@@ -508,14 +611,28 @@ function setTab(i){
   });
   if(i !== 0) vocal.stop();
   if(i !== 1) reading.stop();
+  if(i !== 2) breath.stop();
   try{ speechSynthesis.cancel(); }catch(e){}
-  placeVoiceBar(i);
+  placeMirror(i);
+  ['d-vocal','d-read','d-breath'].forEach(function(id, k){
+    $(id).classList.toggle('hidden', k !== i);
+  });
+  paintToday();
 }
 TABS.forEach(function(pair, i){ $(pair[0]).onclick = function(){ setTab(i); }; });
 
 /* ---------------- daily timers ---------------- */
 const mmss = s => Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0');
-function paintToday(){ $('t-vocal').textContent = mmss(S.tv); $('t-read').textContent = mmss(S.tr); }
+function paintToday(){
+  $('t-vocal').textContent  = mmss(S.tv);
+  $('t-read').textContent   = mmss(S.tr);
+  $('t-breath').textContent = mmss(S.tb || 0);
+  const now = (tab === 0) ? ['Vocal', S.tv, 15]
+            : (tab === 1) ? ['Reading', S.tr, 15]
+            : (tab === 2) ? ['Breathing', S.tb || 0, 3] : null;
+  $('today-chip').style.display = now ? '' : 'none';
+  if(now) $('t-now').textContent = now[0] + '  ' + mmss(now[1]) + ' / ' + now[2];
+}
 paintToday();
 let lastTick = performance.now();
 setInterval(function(){
@@ -525,6 +642,7 @@ setInterval(function(){
   let dirty = false;
   if(vocal.running){ S.tv += d; dirty = true; }
   if(reading.running){ S.tr += d; dirty = true; }
+  if(breath.running){ S.tb = (S.tb || 0) + d; dirty = true; }
   if(dirty){ paintToday(); save(); }
 }, 1000);
 
@@ -562,30 +680,39 @@ function beep(freq, len){
 }
 function segPair(offId, onId, get, set){
   const paint = function(){ $(offId).classList.toggle('on', !get()); $(onId).classList.toggle('on', !!get()); };
-  $(offId).onclick = function(){ set(false); paint(); save(); paintVbLabel(); };
-  $(onId).onclick  = function(){ set(true);  paint(); save(); beep(660, 0.12); paintVbLabel(); };
+  $(offId).onclick = function(){ set(false); paint(); save(); };
+  $(onId).onclick  = function(){ set(true);  paint(); save(); beep(660, 0.12); };
   paint();
 }
 segPair('v-sound-off','v-sound-on', function(){ return S.vSound; }, function(v){ S.vSound = v; });
 segPair('r-sound-off','r-sound-on', function(){ return S.rSound; }, function(v){ S.rSound = v; });
+segPair('b-sound-off','b-sound-on', function(){ return S.bSound; }, function(v){ S.bSound = v; });
 
 /* ================= VOCAL EXERCISE ================= */
 const vocal = {
   running:false, started:false,
-  lesson: Math.min(S.lesson || 0, DATA.vocal.length - 1), i:0,
+  part: Math.min(S.part || 0, DATA.vocal.length - 1), lesson:0, i:0,
   phase:'inhale', t0:0, raf:0,
 
-  words(){ return DATA.vocal[this.lesson]; },
+  part_(){ return DATA.vocal[this.part]; },
+  words(){ return this.part_().lessons[this.lesson]; },
 
   paintLessonSelect(){
     const sel = $('v-lesson'), self = this;
-    sel.innerHTML = DATA.vocal.map(function(w, k){
-      return '<option value="' + k + '">Lesson ' + (k+1) + ' — ' + w.length + ' words</option>';
+    sel.innerHTML = DATA.vocal.map(function(part, pi){
+      return '<optgroup label="' + esc(part.name) + '">' +
+        part.lessons.map(function(l, k){
+          return '<option value="' + pi + ':' + k + '">Lesson ' + (k+1) +
+                 ' — ' + l.length + ' words</option>';
+        }).join('') + '</optgroup>';
     }).join('');
-    sel.value = this.lesson;
+    sel.value = this.part + ':' + this.lesson;
     sel.onchange = function(){
-      self.lesson = +sel.value; self.i = 0; S.lesson = self.lesson; save();
+      const v = sel.value.split(':');
+      self.part = +v[0]; self.lesson = +v[1]; self.i = 0;
+      S.part = self.part; S.lesson = self.lesson; save();
       $('v-strip').dataset.lesson = '';
+      self._fsKey = null;
       self.phase = 'inhale'; self.t0 = performance.now(); self.render(0);
     };
   },
@@ -620,11 +747,13 @@ const vocal = {
       }
     }
 
-    $('v-count').textContent = 'Lesson ' + (this.lesson+1) + ' · word ' + (this.i+1) + ' of ' + this.words().length;
+    $('v-count').textContent = this.part_().name + ' · Lesson ' + (this.lesson+1) +
+      ' · word ' + (this.i+1) + ' of ' + this.words().length;
 
     const strip = $('v-strip'), self = this;
-    if(strip.dataset.lesson !== String(this.lesson)){
-      strip.dataset.lesson = String(this.lesson);
+    const stripKey = this.part + '-' + this.lesson;
+    if(strip.dataset.lesson !== stripKey){
+      strip.dataset.lesson = stripKey;
       strip.innerHTML = this.words().map(function(x, k){
         return '<button data-k="' + k + '">' + x + '</button>';
       }).join('');
@@ -1005,30 +1134,11 @@ slider('r-breath','r-breathv','breath', function(v){ return v.toFixed(1) + ' s';
 document.addEventListener('visibilitychange', function(){
   if(document.hidden) return;
   lastTick = performance.now();
-  if(vocal.running || reading.running) keepAwake(true);
+  if(vocal.running || reading.running || breath.running) keepAwake(true);
+  if(breath.running){ breath.t0 = performance.now(); breath.tick(); }
   if(vocal.running){ vocal.t0 = performance.now(); vocal.loop(); }
   if(reading.running && reading.mode === 'auto'){ reading.t0 = performance.now(); reading.loop(); }
 });
-
-function paintVbLabel(){
-  const bits = [];
-  if(tab === 0){
-    bits.push(S.sayWord ? 'says each word' : 'word not spoken');
-    bits.push(S.vSound ? 'beeps on' : 'beeps off');
-  } else {
-    bits.push(S.ttsMode === 'echo' ? 'voice: then my turn'
-            : S.ttsMode === 'with' ? 'voice: with me' : 'voice off');
-    bits.push(S.rSound ? 'beeps on' : 'beeps off');
-  }
-  if(S.mirror) bits.push('mirror on');
-  $('vb-label').textContent = bits.join('  ·  ');
-}
-function paintVbOpen(){
-  $('vb-body').classList.toggle('closed', !S.vbOpen);
-  $('vb-toggle').innerHTML = 'Voice &amp; mirror ' + (S.vbOpen ? '&#9652;' : '&#9662;');
-  $('vb-toggle').classList.toggle('on', !!S.vbOpen);
-}
-$('vb-toggle').onclick = function(){ S.vbOpen = !S.vbOpen; save(); paintVbOpen(); };
 
 /* ================= MIRROR (front camera, local only) ================= */
 let mediaStream = null;
@@ -1085,7 +1195,6 @@ function paintMirror(){
   document.querySelectorAll('[data-mir]').forEach(function(b){
     b.classList.toggle('on', +b.dataset.mir === (S.mirrorSize || 30));
   });
-  paintVbLabel();
 }
 function setMirror(on){
   S.mirror = !!on; save(); paintMirror();
@@ -1156,8 +1265,8 @@ function paintTtsMode(){
   $('tts-with').classList.toggle('on', S.ttsMode === 'with');
   $('tts-echo').classList.toggle('on', S.ttsMode === 'echo');
   $('tts-sayword').classList.toggle('on', !!S.sayWord);
-  $('tts-sayword').textContent = 'Say each word: ' + (S.sayWord ? 'on' : 'off');
-  paintTtsWarn(); paintVbLabel();
+  $('tts-sayword').textContent = S.sayWord ? 'on' : 'off';
+  paintTtsWarn();
 }
 function setTtsMode(m){
   S.ttsMode = m; save();
@@ -1181,18 +1290,165 @@ $('tts-sayword').onclick = function(){
 slider('tts-rate','tts-ratev','ttsRate', function(v){ return v.toFixed(2) + '×'; });
 
 /* ---- which rows of the voice bar belong to which tab ---- */
-function placeVoiceBar(i){
-  const vb = $('voicebar'), mir = $('mirror');
-  if(i === 2){ vb.style.display = 'none'; mir.style.display = 'none'; return; }
-  vb.style.display = ''; mir.style.display = '';
-  const host = (i === 0) ? $('p-vocal') : $('p-read');
-  const ctrl = (i === 0) ? $('v-controls') : $('r-controls');
-  const stage = (i === 0) ? $('v-stage') : $('r-stage');
+function placeMirror(i){
+  const mir = $('mirror');
+  if(i === 3){ mir.style.display = 'none'; return; }
+  mir.style.display = '';
+  const host  = (i === 0) ? $('p-vocal') : (i === 1) ? $('p-read') : $('p-breath');
+  const stage = (i === 0) ? $('v-stage') : (i === 1) ? $('r-stage') : $('b-stage');
   if(mir.parentNode !== host || mir.nextSibling !== stage) host.insertBefore(mir, stage);
-  if(vb.parentNode !== host || vb.nextSibling !== ctrl) host.insertBefore(vb, ctrl);
-  $('vb-read').classList.toggle('hidden', i !== 1);
-  $('vb-vocal').classList.toggle('hidden', i !== 0);
-  paintTtsWarn(); paintVbLabel();
+  paintTtsWarn();
+}
+
+/* ================= DRAWER ================= */
+function openDrawer(on){
+  $('drawer').classList.toggle('open', on);
+  $('scrim').classList.toggle('on', on);
+}
+$('menu-btn').onclick     = function(){ openDrawer(true); };
+$('drawer-close').onclick = function(){ openDrawer(false); };
+$('scrim').onclick        = function(){ openDrawer(false); };
+
+/* ================= DEEP BREATHING ================= */
+/* Practice Material Book p.17: inhale counting 1..8, exhale counting 8..1,
+   no holding at any point, about 20 breaths.                                */
+const breath = {
+  running:false, started:false,
+  n:1,              /* which breath of the round */
+  k:1,              /* which count within the phase */
+  phase:'in', t0:0, raf:0, speaking:false,
+
+  counts(){ return S.bCounts || 8; },
+  step(){ return (S.bSpeed || 0.6) * 1000; },
+  target(){ return S.bTarget || 20; },
+
+  render(progress){
+    const ring = $('b-ring'), cue = $('b-cue'), bar = $('b-bar'), num = $('b-num');
+    const N = this.counts();
+    if(!this.running){
+      cue.className = 'cue';
+      cue.textContent = this.done ? 'Round complete' : (this.started ? 'Paused' : 'Press Start');
+      num.textContent = this.done ? '✓' : '·';
+      ring.style.transform = 'scale(.25)';
+      bar.style.width = '0%';
+      this.paintCount();
+      return;
+    }
+    /* how far through the whole in- or out-breath we are */
+    const whole = ((this.k - 1) + progress) / N;
+    if(this.phase === 'in'){
+      cue.className = 'cue inhale';
+      cue.textContent = 'Breathe in — slowly, through the nose';
+      ring.style.transform = 'scale(' + (0.25 + 0.75 * whole).toFixed(3) + ')';
+      num.textContent = this.k;
+    } else {
+      cue.className = 'cue speak';
+      cue.textContent = 'Breathe out — just as slowly';
+      ring.style.transform = 'scale(' + (1 - 0.75 * whole).toFixed(3) + ')';
+      num.textContent = N + 1 - this.k;
+    }
+    bar.style.width = (whole * 100).toFixed(1) + '%';
+    this.paintCount();
+  },
+
+  paintCount(){
+    $('b-count').textContent = 'Breath ' + Math.min(this.n, this.target()) + ' of ' + this.target();
+  },
+
+  sayCount(){
+    if(!S.bSay || !this.running) return;
+    const N = this.counts();
+    say(String(this.phase === 'in' ? this.k : N + 1 - this.k));
+  },
+
+  tick(){
+    if(!this.running) return;
+    const self = this;
+    const el = performance.now() - this.t0, d = this.step();
+    if(el >= d){
+      this.t0 = performance.now();
+      this.k++;
+      if(this.k > this.counts()){
+        this.k = 1;
+        if(this.phase === 'in'){
+          this.phase = 'out';
+          if(S.bSound) beep(392, 0.13);
+        } else {
+          this.phase = 'in';
+          this.n++;
+          if(this.n > this.target()){ this.finish(); return; }
+          if(S.bSound) beep(523, 0.13);
+        }
+      }
+      this.sayCount();
+      this.render(0);
+    } else {
+      this.render(el / d);
+    }
+    clearTimeout(this.raf);
+    this.raf = setTimeout(function(){ self.tick(); }, 33);
+  },
+
+  finish(){
+    this.running = false; this.done = true;
+    clearTimeout(this.raf);
+    try{ speechSynthesis.cancel(); }catch(e){}
+    keepAwake(false);
+    if(S.bSound){ beep(523, 0.18); setTimeout(function(){ beep(659, 0.22); }, 200); }
+    $('b-play').textContent = 'Start again';
+    this.n = this.target();
+    this.render(0);
+  },
+
+  start(){
+    if(this.running) return;
+    if(this.done){ this.done = false; this.n = 1; this.k = 1; this.phase = 'in'; }
+    this.running = true; this.started = true;
+    this.t0 = performance.now(); lastTick = performance.now();
+    $('b-play').textContent = 'Pause';
+    if(S.bSound) beep(523, 0.13);
+    keepAwake(true);
+    this.sayCount();
+    this.render(0);
+    this.tick();
+  },
+  stop(){
+    if(!this.running && !this.started){ this.render(0); return; }
+    this.running = false; clearTimeout(this.raf);
+    try{ speechSynthesis.cancel(); }catch(e){}
+    keepAwake(false);
+    $('b-play').textContent = this.done ? 'Start again' : (this.started ? 'Resume' : 'Start');
+    this.render(0);
+  },
+  toggle(){ this.running ? this.stop() : this.start(); },
+  reset(){
+    this.stop();
+    this.n = 1; this.k = 1; this.phase = 'in'; this.done = false; this.started = false;
+    $('b-play').textContent = 'Start';
+    this.render(0);
+  }
+};
+$('b-play').onclick  = function(){ breath.toggle(); };
+$('b-reset').onclick = function(){ breath.reset(); };
+
+function paintBreathLen(){
+  const secs = breath.counts() * (S.bSpeed || 0.6) * 2 * breath.target();
+  $('b-len').textContent = 'One round takes about ' + mmss(secs) +
+    '. The book asks for three minutes of this, and twenty breaths.';
+}
+slider('b-counts','b-countsv','bCounts', function(v){ return String(v); });
+slider('b-speed','b-speedv','bSpeed', function(v){ return v.toFixed(2) + ' s'; });
+slider('b-target','b-targetv','bTarget', function(v){ return String(v); });
+['b-counts','b-speed','b-target'].forEach(function(id){
+  $(id).addEventListener('input', paintBreathLen);
+});
+$('b-say').onclick = function(){
+  S.bSay = !S.bSay; save(); paintBreathToggles();
+  if(S.bSay && breath.running) breath.sayCount();
+};
+function paintBreathToggles(){
+  $('b-say').textContent = S.bSay ? 'on' : 'off';
+  $('b-say').classList.toggle('on', !!S.bSay);
 }
 
 /* ---------------- keyboard ---------------- */
@@ -1201,6 +1457,8 @@ document.addEventListener('keydown', function(e){
   if(e.key === '1'){ setTab(0); return; }
   if(e.key === '2'){ setTab(1); return; }
   if(e.key === '3'){ setTab(2); return; }
+  if(e.key === '4'){ setTab(3); return; }
+  if(e.key === 'Escape'){ openDrawer(false); return; }
   if(tab === 0){
     if(e.code === 'Space'){ e.preventDefault(); vocal.toggle(); }
     if(e.key === 'ArrowRight'){ e.preventDefault(); vocal.step(1); }
@@ -1213,6 +1471,8 @@ document.addEventListener('keydown', function(e){
     }
     if(e.key === 'ArrowRight'){ e.preventDefault(); reading.step(1); }
     if(e.key === 'ArrowLeft'){ e.preventDefault(); reading.step(-1); }
+  } else if(tab === 2){
+    if(e.code === 'Space'){ e.preventDefault(); breath.toggle(); }
   }
 });
 $('r-chunk').addEventListener('click', function(){
@@ -1220,6 +1480,7 @@ $('r-chunk').addEventListener('click', function(){
 });
 
 /* ---------------- boot ---------------- */
+vocal.lesson = Math.min(S.lesson || 0, DATA.vocal[vocal.part].lessons.length - 1);
 vocal.paintLessonSelect();
 vocal.render(0);
 reading.u = Math.min(S.unit || 0, SOURCES[reading.src].units.length - 1);
@@ -1227,9 +1488,11 @@ reading.paintSelects();
 reading.setMode(reading.mode);
 paintTtsMode();
 paintMirror();
-paintVbOpen();
+paintBreathToggles();
+paintBreathLen();
+breath.render(0);
+setTab(0);                     /* also hides the other tabs' settings sections */
 if(S.mirror) startMirror();
-placeVoiceBar(0);
 </script>
 </body>
 </html>
